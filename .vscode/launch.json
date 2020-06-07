@@ -1,0 +1,35 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach NestJS WS",
+      "port": 9229,
+      "restart": true,
+      "stopOnEntry": false,
+      "protocol": "inspector"
+      // "preLaunchTask": "npm: start:debug"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "outputCapture": "std",
+      "runtimeArgs": [],
+      "args": ["ts", "./src"],
+      "env": {
+        "TS": "true",
+        "TS_NODE_FILES": "true",
+        "TS_NODE_PROJECT": "tsconfig.json",
+        "TS_NODE_CACHE_DIRECTORY": ".ts-node",
+        "TS_NODE_TRANSPILE_ONLY": "true",
+        "DEBUG": "true"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}
