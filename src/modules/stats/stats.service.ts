@@ -3,12 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from '../../entities/order.entity';
 import { GetStatCourierResDto } from './dto/stats-res.dto';
+import { OrderAddress } from '../../entities/order-address.entity';
 
 @Injectable()
 export class StatsService {
   constructor(
-    // @InjectRepository(Courier)
-    // private readonly courierRepo: Repository<Courier>,
+    @InjectRepository(OrderAddress)
+    private readonly orderAddressRepo: Repository<OrderAddress>,
 
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
@@ -58,6 +59,7 @@ export class StatsService {
     if (fields.includes('averageTime')) {
       selection.push(
         'sec_to_time(avg(time_to_sec(timediff(o.deliveredAt, o.scheduledDate)))) as averageTime',
+        // 'avg(time_to_sec(timediff(o.deliveredAt, o.scheduledDate))) as averageTime',
       );
     }
 
@@ -74,27 +76,15 @@ export class StatsService {
       return;
     }
 
-    return this.orderRepo.query(
-      `select oA.address
-      from orders o
-      inner join couriers c on o.courierId = c.id
-      inner join orderAddresses oA on o.id = oA.orderId
-      where c.id = ? and o.status = 'delivered'
-      group by oA.address
-      order by count(*) desc
-      limit 1`,
-      [id],
-    );
-
-    // FIXME: not working. joinColumns on oA
-    // .createQueryBuilder('o')
-    // .innerJoin('o.courier', 'c')
-    // .innerJoin('o.orderAddress', 'oA')
-    // .select('oA.address', 'commonAddress')
-    // .where('c.id = :id', { id })
-    // .andWhere('o.status = :status', { status: 'delivered' })
-    // .groupBy('oA.address')
-    // .orderBy('count(*)', 'DESC')
-    // .getRawOne();
+    return this.orderAddressRepo
+      .createQueryBuilder('oA')
+      .innerJoin('oA.order', 'o')
+      .innerJoin('o.courier', 'c')
+      .select('oA.address', 'commonAddress')
+      .where('c.id = :id', { id })
+      .andWhere('o.status = :status', { status: 'delivered' })
+      .groupBy('oA.address')
+      .orderBy('count(*)', 'DESC')
+      .getRawOne();
   }
 }

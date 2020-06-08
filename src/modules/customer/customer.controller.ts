@@ -38,22 +38,7 @@ export class CustomerController {
   updateUser(
     @Req() req: JWTReq.Customer,
     @Body() params: UpdateCustomerDto,
-  ): Promise<boolean> {
+  ): Promise<Customer> {
     return this.service.update(req.user.id, params);
   }
-
-  // @Post('signup')
-  // createUser() {}
-
-  // @Get()
-  // getHello(): string {
-  //   return this.service.getHello();
-  // }
-
-  // @Post()
-  // @ApiOperation({ summary: 'Create cat' })
-  // @ApiResponse({ status: 403, description: 'Forbidden.' })
-  // async create(@Body() createCatDto: CreateCatDto): Promise<Cat> {
-  //   return this.service.create(createCatDto);
-  // }
 }

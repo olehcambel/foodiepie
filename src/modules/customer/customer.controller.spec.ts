@@ -1,23 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerController } from './customer.controller';
-import { CustomerService } from './customer.service';
+import { CustomerModule } from './customer.module';
+import { Connection } from 'typeorm';
 
 describe('CustomerController', () => {
-  let appController: CustomerController;
+  let controller: CustomerController;
+  let conn: Connection;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      // imports: [TypeOrmModule.forRoot(), TypeOrmModule.forRoot([Customer])],
-      controllers: [CustomerController],
-      providers: [CustomerService],
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [TypeOrmModule.forRoot(), CustomerModule],
     }).compile();
 
-    appController = app.get<CustomerController>(CustomerController);
+    controller = module.get<CustomerController>(CustomerController);
+    conn = module.get<Connection>(Connection);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  afterEach(async () => {
+    if (conn) {
+      await conn.close();
+    }
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 });

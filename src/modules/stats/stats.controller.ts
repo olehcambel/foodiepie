@@ -1,12 +1,12 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { StatsService } from './stats.service';
-import { GetStatCourierDto } from './dto/stats.dto';
-import { ParamId } from '../../lib/swagger-dto';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Public } from '../../decorators/access.decorator';
 import { GetStatCourierResDto } from './dto/stats-res.dto';
+import { GetStatCourierDto } from './dto/stats.dto';
+import { StatsService } from './stats.service';
 
 @Controller('stats')
-@ApiBearerAuth()
+@Public()
 @ApiTags('Stats')
 export class StatsController {
   constructor(private readonly service: StatsService) {}
@@ -14,7 +14,7 @@ export class StatsController {
   @Get('couriers/:id')
   // @ApiUserType()
   getCourier(
-    @Param() { id }: ParamId,
+    @Param('id', ParseIntPipe) id: number,
     @Query() query: GetStatCourierDto,
   ): Promise<GetStatCourierResDto> {
     return this.service.getCourier(id, query.fields);

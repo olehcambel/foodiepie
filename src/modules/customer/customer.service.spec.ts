@@ -46,7 +46,7 @@ describe('CustomerService', () => {
       name: 'customer_1',
     };
 
-    it('should success', async () => {
+    it('should succeed', async () => {
       const expectData = customerRepo.create({
         id: 1,
         email: data.email,
@@ -55,11 +55,22 @@ describe('CustomerService', () => {
         status: 'active',
         name: data.name,
       });
-      jest
-        .spyOn(customerRepo, 'save')
-        .mockResolvedValueOnce(Promise.resolve(expectData));
+      jest.spyOn(customerRepo, 'save').mockResolvedValueOnce(expectData);
+      jest.spyOn(service, 'emailExist').mockResolvedValueOnce();
 
       const result = await service.create(data);
+      expect(result).toEqual(expectData);
+    });
+  });
+
+  describe('find', () => {
+    it('should succeed', async () => {
+      const expectData = customerRepo.create({
+        id: 1,
+      });
+      jest.spyOn(customerRepo, 'findOne').mockResolvedValueOnce(expectData);
+      const result = await service.find(1);
+
       expect(result).toEqual(expectData);
     });
   });

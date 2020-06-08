@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StatsController } from './stats.controller';
-import { StatsModule } from './stats.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CourierController } from './courier.controller';
+import { CourierModule } from './courier.module';
 import { Connection } from 'typeorm';
 
-describe('StatsController', () => {
-  let controller: StatsController;
+describe('CourierController', () => {
+  let controller: CourierController;
   let conn: Connection;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(), StatsModule],
+      imports: [TypeOrmModule.forRoot(), CourierModule],
     }).compile();
 
-    controller = module.get<StatsController>(StatsController);
+    controller = module.get<CourierController>(CourierController);
     conn = module.get<Connection>(Connection);
   });
 

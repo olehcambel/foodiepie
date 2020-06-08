@@ -7,7 +7,7 @@ import { Public } from '../../decorators/access.decorator';
 
 @Controller('auth')
 @Public()
-@ApiTags('App')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
@@ -19,10 +19,6 @@ export class AuthController {
   @Post('signup')
   createCustomer(@Body() params: CreateCustomerDto): Promise<TokenRes> {
     return this.service.createCustomer(params);
-  }
-
-  getHello(): string {
-    return 'Hello World!';
   }
 
   // @Get('refresh-token')

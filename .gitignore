@@ -35,6 +35,7 @@ lerna-debug.log*
 
 # config
 .env
+.env.test
 .temp
 
 # manifest

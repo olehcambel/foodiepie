@@ -1,18 +1,13 @@
+import { Type } from 'class-transformer';
 import {
-  Length,
   IsEmail,
-  IsUUID,
-  ValidateNested,
   IsOptional,
-  IsInt,
+  IsUUID,
+  Length,
+  ValidateNested,
 } from 'class-validator';
 import { DeepPartial } from 'typeorm';
-import { Type } from 'class-transformer';
-
-class LanguageDto {
-  @IsInt()
-  id: number;
-}
+import { LanguageRefDto } from '../../../common/ref-entity.dto';
 
 export class CreateCustomerDto implements DeepPartial<AppEntity.Customer> {
   @Length(1, 50)
@@ -24,10 +19,10 @@ export class CreateCustomerDto implements DeepPartial<AppEntity.Customer> {
   @Length(8, 18)
   password: string;
 
-  @Type(() => LanguageDto)
+  @Type(() => LanguageRefDto)
   @ValidateNested()
   @IsOptional()
-  language?: LanguageDto;
+  language?: LanguageRefDto;
 }
 export class LoginDto {
   @IsEmail()

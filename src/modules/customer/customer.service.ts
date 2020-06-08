@@ -18,9 +18,11 @@ export class CustomerService {
     private readonly orderRepo: Repository<Order>,
   ) {}
 
-  async update(id: number, params: UpdateCustomerDto): Promise<boolean> {
+  async update(id: number, params: UpdateCustomerDto): Promise<Customer> {
     await this.customerRepo.update(id, params);
-    return true;
+    // TODO: add parameter { returnValue: bool } -> true or data
+    return this.find(id);
+    // return true;
   }
 
   async delete(id: number): Promise<boolean> {
@@ -30,7 +32,7 @@ export class CustomerService {
 
   find(id: number): Promise<Customer> {
     return this.customerRepo.findOne(id, {
-      select: ['id', 'name', 'status', 'email'],
+      select: ['id', 'name', 'status', 'email', 'description'],
       relations: ['language'],
     });
   }

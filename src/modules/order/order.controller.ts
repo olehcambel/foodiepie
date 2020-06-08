@@ -5,9 +5,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Order } from '../../entities/order.entity';
 import { OrderCheckoutDto } from './dto/order.dto';
 import { OrderService } from './order.service';
-import { Order } from '../../entities/order.entity';
 
 @Controller('orders')
 @ApiBearerAuth()
@@ -24,4 +24,7 @@ export class OrderController {
   ): Promise<Order> {
     return this.service.checkout(req.user.id, params);
   }
+
+  // @Get('/:id/accept')
+  // @Get('/:id/deny')
 }
