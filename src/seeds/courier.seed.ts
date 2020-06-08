@@ -1,7 +1,7 @@
 import { getRepository, DeepPartial } from 'typeorm';
 import { Courier } from '../entities/courier.entity';
 import LanguageSeed from './language.seed';
-import { Seed } from 'src/lib/seed-run/runner';
+import { Seed } from '../lib/seed-run/runner';
 
 export const seed: DeepPartial<Courier>[] = [
   {

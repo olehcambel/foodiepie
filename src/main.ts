@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('source-map-support').install();
 require('./config');
 
@@ -28,7 +29,6 @@ async function bootstrap(): Promise<void> {
       validationError: { target: false },
     }),
   );
-  // TODO: add interceptor, error filter
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionFilter());
   app.useGlobalGuards(new RolesGuard(reflector));

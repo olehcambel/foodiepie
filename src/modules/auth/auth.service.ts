@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { getToken } from 'src/common/jwt/jwt';
-import { Customer } from 'src/entities/customer.entity';
 import { CustomerService } from '../customer/customer.service';
 import { TokenRes } from './dto/auth-res.dto';
-import { LoginDto } from './dto/auth.dto';
+import { LoginDto, CreateCustomerDto } from './dto/auth.dto';
+import { Customer } from '../../entities/customer.entity';
+import { getToken } from '../../common/jwt/jwt';
 
 @Injectable()
 export class AuthService {
@@ -15,11 +15,17 @@ export class AuthService {
     return this.createToken(user);
   }
 
+  async createCustomer(params: CreateCustomerDto): Promise<TokenRes> {
+    const user = await this.customerService.create(params);
+
+    return this.createToken(user);
+  }
+
   // getRefreshToken(): Promise<TokenRes> {
   //
   // }
 
-  // TODO: should both for customer and courier
+  // TODO: should be both for customer and courier
   private createToken(params: Customer): JWTReq.Token {
     const data: JWTReq.TokenPayload = {
       id: params.id,

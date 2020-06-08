@@ -33,7 +33,10 @@ export class OrderAddress implements AppEntity.OrderAddress {
   @Column({ length: 20, nullable: true })
   contactPhone?: string;
 
-  @OneToOne(() => Order, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @OneToOne(() => Order, (o) => o.orderAddress, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   order: Order;
 }

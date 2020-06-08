@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderItem } from 'src/entities/order-item.entity';
-import { Order } from 'src/entities/order.entity';
-import { Product } from 'src/entities/product.entity';
 import { DeepPartial, Repository } from 'typeorm';
 import { OrderCheckoutDto } from './dto/order.dto';
+import { Order } from '../../entities/order.entity';
+import { Product } from '../../entities/product.entity';
+import { OrderItem } from '../../entities/order-item.entity';
 
 @Injectable()
 export class OrderService {
@@ -37,12 +37,18 @@ export class OrderService {
 
     const order = await this.orderRepo.save({
       description: params.description,
-      scheduledDate: params.scheduledDate,
+      /** FIXME:
+       * If you want the order to be scheduled, provide a scheduleTime.
+       * Otherwise, it'll be scheduled for immediate delivery.
+       * However, it should not be RIGHT NOW, maybe 5 later???
+       */
+
+      scheduledDate: params.scheduledDate || new Date(),
       status: 'scheduled',
-      customer: { id: customerID },
       price: String(totalPrice),
       // TODO: get currency from user ???
       currency: { id: 1 },
+      customer: { id: customerID },
       orderAddress: {
         address: params.orderAddress.address,
         latitude: params.orderAddress.latitude,
@@ -50,8 +56,6 @@ export class OrderService {
       },
       orderItems,
     });
-
-    // await this.orderRepo.insert(order);
 
     return order;
   }

@@ -25,7 +25,7 @@ export class Order implements AppEntity.Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('tinytext', { nullable: true })
+  @Column({ length: 255, nullable: true })
   description?: string;
 
   @Column({ width: 1, default: false })
@@ -37,8 +37,11 @@ export class Order implements AppEntity.Order {
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
   status: AppEntity.OrderStatus;
 
+  @Column({ type: 'timestamp' })
+  scheduledDate: Date;
+
   @Column({ type: 'timestamp', nullable: true })
-  scheduledDate?: Date;
+  deliveredAt?: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt: Date;

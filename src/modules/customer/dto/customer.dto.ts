@@ -1,11 +1,15 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Length, Max, Min } from 'class-validator';
+import { DeepPartial } from 'typeorm';
 
-export class CreateCatDto {
-  @Length(1, 10)
-  readonly name: string;
-  readonly age: number;
-  readonly breed: string;
+export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
+  @Length(1, 50)
+  @IsOptional()
+  name?: string;
+
+  @Length(1, 255)
+  @IsOptional()
+  description?: string;
 }
 
 // TODO: if status is active -> add courier info

@@ -12,7 +12,7 @@ export class Product implements AppEntity.Product {
   @Column({ length: 50, nullable: true })
   externalID?: string;
 
-  @Column({ length: 256, nullable: true })
+  @Column({ length: 255, nullable: true })
   imageURL?: string;
 
   @Column('decimal', { precision: 9, scale: 2 })

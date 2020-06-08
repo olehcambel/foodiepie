@@ -1,7 +1,9 @@
 import { config } from 'dotenv';
 import { getEnv, getEnvNumber, getEnvBool } from './lib/dotenv-get';
 
-config({ path: './.env' });
+const IS_TEST = getEnvBool('NODE_ENV', false);
+
+config({ path: IS_TEST ? './.env.test' : './.env' });
 
 // MAIN CONF
 export const NODE_ENV = getEnv('NODE_ENV', 'development');

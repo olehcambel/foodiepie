@@ -1,5 +1,9 @@
+// @ts-check
+
 'use strict';
 
+const IS_TEST = process.env.NODE_ENV === 'test';
+if (IS_TEST) process.env.TS = 'true';
 const dir = process.env.TS ? 'src' : 'dist';
 
 const {
@@ -17,8 +21,11 @@ const options = {
   host: MYSQL_HOST,
   username: MYSQL_USERNAME,
   password: MYSQL_PASSWORD,
-  database: MYSQL_DATABASE,
+  database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
   type: 'mysql',
+  // synchronize: IS_TEST,
+  // dropSchema: IS_TEST,
+
   migrations: [`${dir}/migrations/*.{ts,js}`],
   entities: [`${dir}/entities/*.entity.{ts,js}`],
   subscribers: [`${dir}/subscribers/*.{ts,js}`],

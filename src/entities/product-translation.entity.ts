@@ -9,7 +9,7 @@ export class ProductTranslation implements AppEntity.ProductTranslation {
   @Column({ length: 50 })
   title: string;
 
-  @Column('tinytext', { nullable: true })
+  @Column({ length: 255, nullable: true })
   description?: string;
 
   @ManyToOne(() => Product, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })

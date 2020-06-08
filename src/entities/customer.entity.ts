@@ -24,10 +24,10 @@ export class Customer implements AppEntity.Customer {
   @Column({ length: 50 })
   passwordSalt: string;
 
-  @Column({ length: 256, nullable: true })
+  @Column({ length: 255, nullable: true })
   imageURL?: string;
 
-  @Column('tinytext', { nullable: true })
+  @Column({ length: 255, nullable: true })
   description?: string;
 
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })

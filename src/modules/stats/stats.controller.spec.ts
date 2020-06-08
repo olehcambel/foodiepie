@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { StatsController } from './stats.controller';
+import { StatsModule } from './stats.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthController } from './auth.controller';
-import { AuthModule } from './auth.module';
 
-describe('AuthController', () => {
-  let controller: AuthController;
+describe('StatsController', () => {
+  let controller: StatsController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(), AuthModule],
+      imports: [TypeOrmModule.forRoot(), StatsModule],
     }).compile();
 
-    controller = app.get<AuthController>(AuthController);
+    controller = app.get<StatsController>(StatsController);
   });
 
   it('should be defined', () => {

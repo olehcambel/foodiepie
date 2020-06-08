@@ -3,7 +3,8 @@ declare namespace AppEntity {
   interface Order extends Timestamp {
     id: number;
     description?: string;
-    scheduledDate?: Date;
+    scheduledDate: Date;
+    deliveredAt?: Date;
     /** TODO: should be invoice, invoiceItem, receipt entities */
     isPaid: boolean;
     // paidAt?: Date;

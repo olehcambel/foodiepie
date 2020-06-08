@@ -12,10 +12,10 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { OrderAddress } from 'src/entities/order-address.entity';
-import { OrderItem } from 'src/entities/order-item.entity';
-import { Order } from 'src/entities/order.entity';
 import { DeepPartial } from 'typeorm';
+import { OrderAddress } from '../../../entities/order-address.entity';
+import { OrderItem } from '../../../entities/order-item.entity';
+import { Order } from '../../../entities/order.entity';
 
 class OrderAddressDto implements DeepPartial<OrderAddress> {
   @Length(1, 100)

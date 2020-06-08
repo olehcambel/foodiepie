@@ -1,7 +1,8 @@
-import { getRepository, DeepPartial } from 'typeorm';
+import { DeepPartial, getRepository } from 'typeorm';
 import { OrderAddress } from '../entities/order-address.entity';
+import { Seed } from '../lib/seed-run/runner';
 import LanguageSeed from './language.seed';
-import { Seed } from 'src/lib/seed-run/runner';
+import OrderSeed from './order.seed';
 
 export const seed: DeepPartial<OrderAddress>[] = [
   {
@@ -31,7 +32,7 @@ export const seed: DeepPartial<OrderAddress>[] = [
     details: 'Blue button of the intercom',
     contactPerson: 'Dave',
     contactPhone: '+34622334452',
-    order: { id: 2 },
+    order: { id: 3 },
   },
   {
     latitude: 15.4609696,
@@ -41,7 +42,7 @@ export const seed: DeepPartial<OrderAddress>[] = [
     details: 'Blue button of the intercom',
     contactPerson: 'Dave',
     contactPhone: '+34622334452',
-    order: { id: 2 },
+    order: { id: 4 },
   },
   {
     latitude: 20.4609696,
@@ -51,7 +52,7 @@ export const seed: DeepPartial<OrderAddress>[] = [
     details: 'Blue button of the intercom',
     contactPerson: 'Dave',
     contactPhone: '+34622334452',
-    order: { id: 1 },
+    order: { id: 5 },
   },
 ];
 
@@ -63,6 +64,7 @@ export default class OrderAddressSeed implements Seed {
     if (exist) return false;
 
     await new LanguageSeed().up();
+    await new OrderSeed().up();
 
     await this.repo.save(seed);
     return true;

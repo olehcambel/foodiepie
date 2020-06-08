@@ -1,6 +1,6 @@
 import { getRepository, DeepPartial } from 'typeorm';
-import { Seed } from 'src/lib/seed-run/runner';
-import { StoreType } from 'src/entities/store-type.entity';
+import { StoreType } from '../entities/store-type.entity';
+import { Seed } from '../lib/seed-run/runner';
 
 export const seed: DeepPartial<StoreType>[] = [
   {

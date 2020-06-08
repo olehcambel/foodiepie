@@ -36,10 +36,10 @@ export class Courier implements AppEntity.Courier {
   @Column({ length: 50 })
   passwordSalt: string;
 
-  @Column({ length: 256, nullable: true })
+  @Column({ length: 255, nullable: true })
   imageURL?: string;
 
-  @Column('tinytext', { nullable: true })
+  @Column({ length: 255, nullable: true })
   description?: string;
 
   @Column('decimal', { precision: 2, scale: 1, nullable: true })

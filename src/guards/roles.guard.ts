@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { jwtVerify } from 'src/common/jwt/jwt';
-import { IS_PUBLIC_METADATA_KEY } from 'src/decorators/access.decorator';
+import { jwtVerify } from '../common/jwt/jwt';
+import { IS_PUBLIC_METADATA_KEY } from '../decorators/access.decorator';
 
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}

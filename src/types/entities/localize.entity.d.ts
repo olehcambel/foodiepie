@@ -115,7 +115,7 @@ declare namespace AppEntity {
   //     id: number;
   //     type: StoreType;
   //     // kinda main account and related users (?)
-  //     // TODO: add work hours
+  //     // add work hours
   //   }
 
   //   interface MenuItem {

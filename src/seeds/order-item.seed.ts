@@ -1,8 +1,8 @@
-import { Seed } from 'src/lib/seed-run/runner';
 import { DeepPartial, getRepository } from 'typeorm';
 import { OrderItem } from '../entities/order-item.entity';
 import ProductSeed from './product.seed';
 import OrderSeed from './order.seed';
+import { Seed } from '../lib/seed-run/runner';
 
 export const seed: DeepPartial<OrderItem>[] = [
   {
