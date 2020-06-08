@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { Product } from './product.entity';
+import { Language } from './language.entity';
 
 @Entity('productTranslations')
 export class ProductTranslation implements AppEntity.ProductTranslation {
@@ -14,4 +15,7 @@ export class ProductTranslation implements AppEntity.ProductTranslation {
 
   @ManyToOne(() => Product, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   product: Product;
+
+  @ManyToOne(() => Language, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  language: Language;
 }

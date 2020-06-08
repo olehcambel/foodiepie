@@ -50,5 +50,6 @@ declare namespace AppEntity {
     title: string;
     description?: string;
     product: Product;
+    language: Language;
   }
 }
