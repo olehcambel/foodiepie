@@ -1,18 +1,28 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsDecimal,
+  IsIn,
+  IsInt,
   IsLatitude,
   IsLongitude,
-  IsPostalCode,
-  Length,
-  ValidateNested,
+  IsObject,
   IsOptional,
+  Length,
+  Max,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { DeepPartial } from 'typeorm';
-import { StoreRefDto, StoreTypeRefDto } from '../../../common/ref-entity.dto';
-import { StoreAddress } from '../../../entities/store-address.entity';
+import { LanguageRefDto } from '../../../common/ref-entity.dto';
+import { ProductTranslation } from '../../../entities/product-translation.entity';
+import { Product } from '../../../entities/product.entity';
+import { StoreLocation } from '../../../entities/store-location.entity';
 import { Store } from '../../../entities/store.entity';
 
-export class CreateStoreAddressDto implements DeepPartial<StoreAddress> {
+class StoreLocationDto implements DeepPartial<StoreLocation> {
   @IsLatitude()
   latitude: number;
 
@@ -22,17 +32,14 @@ export class CreateStoreAddressDto implements DeepPartial<StoreAddress> {
   @Length(1, 100)
   address: string;
 
-  @IsPostalCode()
+  // @IsPostalCode()
+  @Length(5, 10)
   postalCode: string;
-
-  @Type(() => StoreRefDto)
-  @ValidateNested()
-  store: StoreRefDto;
 }
 
 export class CreateStoreDto implements DeepPartial<Store> {
   @Length(1, 50)
-  name: string;
+  title: string;
 
   @Length(1, 50)
   slug: string;
@@ -41,7 +48,93 @@ export class CreateStoreDto implements DeepPartial<Store> {
   @IsOptional()
   description?: string;
 
-  @Type(() => StoreTypeRefDto)
+  @Type(() => StoreLocationDto)
   @ValidateNested()
-  storeType: StoreTypeRefDto;
+  readonly location: StoreLocationDto;
+}
+
+const fields: (keyof Store)[] = [
+  'createdAt',
+  'slug',
+  'description',
+  'id',
+  'title',
+];
+
+const contain: (keyof Store)[] = ['location'];
+
+export class GetStoresDto {
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(100)
+  @Type(() => Number)
+  limit?: number;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(10000)
+  @Type(() => Number)
+  offset?: number;
+
+  @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
+  @IsOptional()
+  @IsIn(fields, { each: true })
+  @ArrayMinSize(1)
+  @IsOptional()
+  fields?: (keyof Store)[];
+
+  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contain[]' })
+  @IsOptional()
+  @ArrayMinSize(1)
+  @IsIn(contain, { each: true })
+  @IsOptional()
+  contains?: (keyof Store)[];
+}
+
+export class UpdateStoreDto implements DeepPartial<Store> {
+  @Length(1, 4096)
+  @IsOptional()
+  description?: string;
+}
+
+class ProductTranslationDto implements DeepPartial<ProductTranslation> {
+  @Length(1, 50)
+  title: string;
+
+  @Length(1, 255)
+  description?: string;
+
+  @Type(() => LanguageRefDto)
+  @ValidateNested()
+  @IsObject()
+  language: LanguageRefDto;
+}
+
+class SaveProduct implements DeepPartial<Product> {
+  // @Expose({ name: 'externalId' })
+  @Length(1, 50)
+  @IsOptional()
+  externalID: string;
+
+  @Length(1, 255)
+  imageURL: string;
+
+  @IsDecimal()
+  price: string;
+
+  @Type(() => ProductTranslationDto)
+  @ValidateNested({ each: true })
+  @IsObject({ each: true })
+  @ArrayMaxSize(10)
+  translations: ProductTranslationDto[];
+}
+
+export class SaveProductsDto {
+  @Type(() => SaveProduct)
+  @ValidateNested({ each: true })
+  @IsObject({ each: true })
+  @ArrayMaxSize(100)
+  data: SaveProduct[];
 }

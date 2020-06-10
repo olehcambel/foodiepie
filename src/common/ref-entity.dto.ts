@@ -9,8 +9,3 @@ export class StoreRefDto {
   @IsInt()
   id: number;
 }
-
-export class StoreTypeRefDto {
-  @IsInt()
-  id: number;
-}

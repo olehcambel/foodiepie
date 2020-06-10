@@ -11,4 +11,9 @@ declare namespace Response {
     message: string;
     errors?: string[];
   }
+
+  interface Paginate<T> {
+    count: number;
+    data: T[];
+  }
 }

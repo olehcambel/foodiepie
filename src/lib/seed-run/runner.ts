@@ -25,7 +25,7 @@ export class Runner {
     files.sort();
 
     for (const fileName of files) {
-      if (/(.*)\.js$/.test(fileName)) {
+      if (/(.*)\.seed\.(j|t)s$/.test(fileName)) {
         await this.runOne(fileName);
       }
     }

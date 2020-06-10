@@ -2,20 +2,27 @@ declare namespace AppEntity {
   type OrderStatus = 'scheduled' | 'active' | 'delivered' | 'cancelled';
   interface Order extends Timestamp {
     id: number;
+    status: OrderStatus;
     description?: string;
     scheduledDate: Date;
-    deliveredAt?: Date;
+    finishedAt?: Date;
     /** TODO: should be invoice, invoiceItem, receipt entities */
     isPaid: boolean;
     // paidAt?: Date;
-    price: string;
-    status: OrderStatus;
-    // orderStatus: OrderStatus; // orderStatusID
-    currency: Currency;
-    storeAddress: StoreAddress;
+    totalPrice: string;
+    deliveryPrice: string;
+    // currency: Currency;
+    storeLocation: StoreLocation;
     customer: Customer;
     courier?: Courier;
   }
+
+  // kinda invoice
+  // interface OrderSummary {
+  //   quantity: number;
+  //   shipping: number;
+  //   subtotal: number;
+  // }
 
   interface OrderItem {
     id: number;
@@ -28,7 +35,7 @@ declare namespace AppEntity {
   // interface Invoice {
   //   id: number;
   //   isPaid: boolean;
-  //   totalPrice: number;
+  //   totalPrice: string;
   //   createdAt: Date;
   //   order: Order;
   //   receipt?: Receipt;

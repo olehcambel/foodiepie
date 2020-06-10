@@ -124,7 +124,7 @@ declare namespace AppEntity {
   //     // description?: string;
   //     image_url?: string;
   //     // float64
-  //     price: number;
+  //     price: string;
   //     currency_code: string;
   //     external_id?: string;
   //   }

@@ -15,7 +15,6 @@ declare namespace AppEntity {
     passwordSalt: string;
     imageURL?: string;
     description?: string;
-    rating?: number;
     status: CourierStatus;
     language: Language;
   }

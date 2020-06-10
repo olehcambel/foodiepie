@@ -1,21 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PAGE_LIMIT, PAGE_OFFSET, SALT_LENGTH } from '../../common/constants';
+import { SALT_LENGTH } from '../../common/constants';
 import { Customer } from '../../entities/customer.entity';
-import { Order } from '../../entities/order.entity';
 import { compareHash, geneHash } from '../../lib/hash';
 import { CreateCustomerDto, LoginDto } from '../auth/dto/auth.dto';
-import { GetCustomerOrders, UpdateCustomerDto } from './dto/customer.dto';
+import { UpdateCustomerDto } from './dto/customer.dto';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepo: Repository<Customer>,
-
-    @InjectRepository(Order)
-    private readonly orderRepo: Repository<Order>,
   ) {}
 
   async update(id: number, params: UpdateCustomerDto): Promise<Customer> {
@@ -62,19 +58,6 @@ export class CustomerService {
     });
 
     return user;
-  }
-
-  getOrders(userID: number, params: GetCustomerOrders): Promise<Order[]> {
-    return this.orderRepo.find({
-      take: params.limit || PAGE_LIMIT,
-      skip: params.offset || PAGE_OFFSET,
-      select: ['id', 'isPaid', 'price', 'status'],
-      where: {
-        customer: {
-          id: userID,
-        },
-      },
-    });
   }
 
   async findByCreds(params: LoginDto): Promise<Customer> {

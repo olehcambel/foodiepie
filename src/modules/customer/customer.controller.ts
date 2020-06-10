@@ -1,25 +1,15 @@
-import { Controller, Get, Put, Query, Req, Body, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Put, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiUserType } from '../../decorators/user-type.decorator';
-import { CustomerService } from './customer.service';
-import { GetCustomerOrders, UpdateCustomerDto } from './dto/customer.dto';
 import { Customer } from '../../entities/customer.entity';
-import { Order } from '../../entities/order.entity';
+import { CustomerService } from './customer.service';
+import { UpdateCustomerDto } from './dto/customer.dto';
 
 @Controller('customers')
 @ApiBearerAuth()
 @ApiTags('Customer')
 export class CustomerController {
   constructor(private readonly service: CustomerService) {}
-
-  @Get('orders')
-  @ApiUserType('customer')
-  getOrders(
-    @Query() params: GetCustomerOrders,
-    @Req() req: JWTReq.Customer,
-  ): Promise<Order[]> {
-    return this.service.getOrders(req.user.id, params);
-  }
 
   @Get('me')
   @ApiUserType('customer')

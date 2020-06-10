@@ -58,8 +58,8 @@ export class StatsService {
 
     if (fields.includes('averageTime')) {
       selection.push(
-        'sec_to_time(avg(time_to_sec(timediff(o.deliveredAt, o.scheduledDate)))) as averageTime',
-        // 'avg(time_to_sec(timediff(o.deliveredAt, o.scheduledDate))) as averageTime',
+        'sec_to_time(avg(time_to_sec(timediff(o.finishedAt, o.scheduledDate)))) as averageTime',
+        // 'avg(time_to_sec(timediff(o.finishedAt, o.scheduledDate))) as averageTime',
       );
     }
 

@@ -23,6 +23,8 @@ const options = {
   password: MYSQL_PASSWORD,
   database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
   type: 'mysql',
+  bigNumberStrings: true,
+
   // synchronize: IS_TEST,
   // dropSchema: IS_TEST,
 

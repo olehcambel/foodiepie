@@ -1,4 +1,15 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  Put,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  NotImplementedException,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -6,10 +17,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Order } from '../../entities/order.entity';
-import { OrderCheckoutDto } from './dto/order.dto';
+import { OrderCheckoutDto, GetCustomerOrders } from './dto/order.dto';
 import { OrderService } from './order.service';
+import { ApiUserType } from '../../decorators/user-type.decorator';
 
-@Controller('orders')
+@Controller('custumers/orders')
 @ApiBearerAuth()
 @ApiTags('Orders')
 export class OrderController {
@@ -25,6 +37,25 @@ export class OrderController {
     return this.service.checkout(req.user.id, params);
   }
 
-  // @Get('/:id/accept')
-  // @Get('/:id/deny')
+  @Get()
+  @ApiUserType('customer')
+  getOrders(
+    @Query() params: GetCustomerOrders,
+    @Req() req: JWTReq.Customer,
+  ): Promise<Order[]> {
+    return this.service.getOrders(req.user.id, params);
+  }
+
+  @Get('receipt/estimation')
+  calcReceipt(): Promise<void> {
+    throw new NotImplementedException();
+  }
+
+  @Put(':orderId/cancel')
+  cancelOrder(
+    @Req() req: JWTReq.Customer,
+    @Param('orderId', ParseIntPipe) orderID: number,
+  ): Promise<boolean> {
+    return this.service.cancelOrder(req.user.id, orderID);
+  }
 }

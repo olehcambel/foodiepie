@@ -1,6 +1,7 @@
 /// <reference types="express"/>
 
 declare namespace JWTReq {
+  // type UserType = 'customer'
   interface TokenPayload {
     type: 'customer';
     id: number;

@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
-import { OrderCheckoutDto } from './dto/order.dto';
+import { OrderCheckoutDto, GetCustomerOrders } from './dto/order.dto';
 import { Order } from '../../entities/order.entity';
 import { Product } from '../../entities/product.entity';
 import { OrderItem } from '../../entities/order-item.entity';
+import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 
 @Injectable()
 export class OrderService {
@@ -40,7 +41,7 @@ export class OrderService {
       /** FIXME:
        * If you want the order to be scheduled, provide a scheduleTime.
        * Otherwise, it'll be scheduled for immediate delivery.
-       * However, it should not be RIGHT NOW, maybe 5 later???
+       * However, it should not be RIGHT NOW, maybe 25 later???
        */
 
       scheduledDate: params.scheduledDate || new Date(),
@@ -58,5 +59,34 @@ export class OrderService {
     });
 
     return order;
+  }
+
+  async cancelOrder(customerID: number, orderID: number): Promise<boolean> {
+    const o = await this.orderRepo.findOne({
+      select: ['id', 'status'],
+      where: { id: orderID, customer: { id: customerID } },
+    });
+    if (o.status === 'scheduled') {
+      o.status = 'cancelled';
+      o.finishedAt = new Date();
+      await this.orderRepo.save(o);
+
+      return true;
+    }
+
+    throw new BadRequestException('Status must be "scheduled" to cancel');
+  }
+
+  getOrders(userID: number, params: GetCustomerOrders): Promise<Order[]> {
+    return this.orderRepo.find({
+      take: params.limit || PAGE_LIMIT,
+      skip: params.offset || PAGE_OFFSET,
+      select: ['id', 'isPaid', 'totalPrice', 'status'],
+      where: {
+        customer: {
+          id: userID,
+        },
+      },
+    });
   }
 }

@@ -1,5 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { StoreType } from './store-type.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Customer } from './customer.entity';
+import { StoreLocation } from './store-location.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 const statusArray: AppEntity.StoreStatus[] = [
   'pending',
@@ -15,7 +23,7 @@ export class Store implements AppEntity.Store {
   id: number;
 
   @Column({ length: 50 })
-  name: string;
+  title: string;
 
   @Column({ length: 50 })
   slug: string;
@@ -26,6 +34,20 @@ export class Store implements AppEntity.Store {
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
   status: AppEntity.StoreStatus;
 
-  @ManyToOne(() => StoreType, { onDelete: 'SET NULL', onUpdate: 'CASCADE' })
-  storeType: StoreType;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  readonly createdAt: Date;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  readonly updatedAt: Date;
+
+  @OneToOne(() => StoreLocation, { cascade: ['update', 'insert'] })
+  location: StoreLocation;
+
+  @ManyToOne(() => Customer, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  @ApiHideProperty()
+  owner: Customer;
 }

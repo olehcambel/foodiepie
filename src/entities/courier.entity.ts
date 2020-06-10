@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Language } from './language.entity';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 export const statusArray: AppEntity.CourierStatus[] = [
   'pending',
@@ -30,10 +31,12 @@ export class Courier implements AppEntity.Courier {
   @Column({ length: 50, unique: true })
   email: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, select: false })
+  @ApiHideProperty()
   passwordHash: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, select: false })
+  @ApiHideProperty()
   passwordSalt: string;
 
   @Column({ length: 255, nullable: true })
@@ -41,9 +44,6 @@ export class Courier implements AppEntity.Courier {
 
   @Column({ length: 255, nullable: true })
   description?: string;
-
-  @Column('decimal', { precision: 2, scale: 1, nullable: true })
-  rating?: number;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt: Date;

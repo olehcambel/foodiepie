@@ -1,4 +1,5 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { ApiHideProperty } from '@nestjs/swagger';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Language } from './language.entity';
 
 export const statusArray: AppEntity.CustomerStatus[] = [
@@ -18,10 +19,12 @@ export class Customer implements AppEntity.Customer {
   @Column({ length: 50, unique: true })
   email: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, select: false })
+  @ApiHideProperty()
   passwordHash: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, select: false })
+  @ApiHideProperty()
   passwordSalt: string;
 
   @Column({ length: 255, nullable: true })
