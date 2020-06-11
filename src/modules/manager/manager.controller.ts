@@ -1,37 +1,52 @@
 import {
+  Body,
   Controller,
   Get,
-  NotImplementedException,
+  Param,
+  ParseIntPipe,
   Put,
   Query,
-  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { ManagerService } from './manager.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiUserType } from '../../decorators/user-type.decorator';
+import { Courier } from '../../entities/courier.entity';
+import { CourierService } from '../courier/courier.service';
+import { CouriersResDto } from '../courier/dto/courier-res.dto';
+import {
+  GetCouriersDto,
+  UpdateCourierFullDto,
+} from '../courier/dto/courier.dto';
+import { CustomerService } from '../customer/customer.service';
+import { UpdateCustomerFullDto } from '../customer/dto/customer.dto';
 
 @Controller('managers')
 @ApiTags('Manager')
 @ApiBearerAuth()
 export class ManagerController {
-  constructor(private readonly service: ManagerService) {}
+  constructor(
+    private readonly courierService: CourierService,
+    private readonly customerService: CustomerService,
+  ) {}
 
   @Get('couriers')
   @ApiUserType('manager')
-  getCouriers(): Promise<void> {
-    throw new NotImplementedException();
+  getCouriers(@Query() params: GetCouriersDto): Promise<CouriersResDto> {
+    return this.courierService.findAll(params);
   }
 
   @Get('couriers/:courierId')
   @ApiUserType('manager')
-  getCourier(): Promise<void> {
-    throw new NotImplementedException();
+  getCourier(@Param('id', ParseIntPipe) courierID: number): Promise<Courier> {
+    return this.courierService.find(courierID);
   }
 
   @Put('couriers/:courierId')
   @ApiUserType('manager')
-  updateCourier(): Promise<void> {
-    throw new NotImplementedException();
+  updateCourier(
+    @Query('courierId', ParseIntPipe) courierID: number,
+    @Body() params: UpdateCourierFullDto,
+  ): Promise<boolean> {
+    return this.courierService.updateFull(courierID, params);
   }
 
   @Put('couriers/:courierId')
@@ -39,12 +54,15 @@ export class ManagerController {
   deleteCourier(
     @Query('courierId', ParseIntPipe) courierID: number,
   ): Promise<boolean> {
-    return this.service.deleteCourier(courierID);
+    return this.courierService.delete(courierID);
   }
 
   @Put('customers/:customerId')
   @ApiUserType('manager')
-  updateCustomer(): Promise<void> {
-    throw new NotImplementedException();
+  updateCustomer(
+    @Query('courierId', ParseIntPipe) customerID: number,
+    @Body() params: UpdateCustomerFullDto,
+  ): Promise<boolean> {
+    return this.customerService.updateFull(customerID, params);
   }
 }

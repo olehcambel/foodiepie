@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
+  ApiNotImplementedResponse,
 } from '@nestjs/swagger';
 import { Order } from '../../entities/order.entity';
 import { OrderCheckoutDto, GetCustomerOrders } from './dto/order.dto';
@@ -28,7 +29,9 @@ export class OrderController {
   constructor(private readonly service: OrderService) {}
 
   @Post('checkout')
-  @ApiOperation({ summary: 'create an order' })
+  @ApiOperation({
+    summary: 'Create an order for delivery.',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiUserType('customer')
   checkout(
@@ -40,6 +43,7 @@ export class OrderController {
 
   @Get()
   @ApiUserType('customer')
+  @ApiOperation({ summary: 'Retrieve a list of orders.' })
   getOrders(
     @Query() params: GetCustomerOrders,
     @Req() req: JWTReq.User,
@@ -49,12 +53,17 @@ export class OrderController {
 
   @Get('receipt/estimation')
   @ApiUserType('customer')
+  @ApiOperation({ summary: 'Provide a price estimation for an order.' })
+  @ApiNotImplementedResponse({ description: 'NYI' })
   calcReceipt(): Promise<void> {
     throw new NotImplementedException();
   }
 
   @Put(':orderId/cancel')
   @ApiUserType('customer')
+  @ApiOperation({
+    summary: 'Cancel a scheduled order. Active orders cannot be canceled.',
+  })
   cancelOrder(
     @Req() req: JWTReq.User,
     @Param('orderId', ParseIntPipe) orderID: number,

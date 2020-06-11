@@ -8,7 +8,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Public } from '../../decorators/access.decorator';
 import { ApiUserType } from '../../decorators/user-type.decorator';
 import { Courier } from '../../entities/courier.entity';
@@ -27,6 +27,7 @@ export class CourierController {
   constructor(private readonly service: CourierService) {}
 
   @Post('candidates')
+  @ApiOperation({ summary: 'Register for an courier job.' })
   @Public()
   createCandidate(@Body() params: CreateCandidate): Promise<number> {
     return this.service.create(params);
@@ -42,6 +43,7 @@ export class CourierController {
   }
 
   @Put('orders/:orderId/accept')
+  @ApiOperation({ summary: 'Accept an order. Available if courierId is null' })
   @ApiUserType('courier')
   acceptOrder(
     @Query('orderId', ParseIntPipe) orderID: number,

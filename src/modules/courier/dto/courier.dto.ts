@@ -1,20 +1,23 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsEmail,
+  IsIn,
+  IsInt,
+  IsObject,
   IsOptional,
   Length,
-  ValidateNested,
-  IsInt,
-  Min,
   Max,
-  IsIn,
-  ArrayMinSize,
-  IsObject,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { DeepPartial } from 'typeorm';
 import { LanguageRefDto } from '../../../common/ref-entity.dto';
-import { Courier } from '../../../entities/courier.entity';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  Courier,
+  statusArray as courierStatus,
+} from '../../../entities/courier.entity';
 import { Order, statusArray } from '../../../entities/order.entity';
 
 export class CreateCandidate implements DeepPartial<Courier> {
@@ -39,7 +42,45 @@ export class CreateCandidate implements DeepPartial<Courier> {
   language?: LanguageRefDto;
 }
 
+export class GetCouriersDto {
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(100)
+  @Type(() => Number)
+  limit?: number;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(10000)
+  @Type(() => Number)
+  offset?: number;
+}
+
 export class UpdateCourierDto implements DeepPartial<AppEntity.Courier> {
+  @Length(1, 50)
+  @IsOptional()
+  firstName?: string;
+
+  @Length(1, 50)
+  @IsOptional()
+  lastName?: string;
+
+  @Length(1, 255)
+  @IsOptional()
+  imageURL?: string;
+
+  @Length(1, 255)
+  @IsOptional()
+  description?: string;
+}
+
+export class UpdateCourierFullDto implements DeepPartial<AppEntity.Courier> {
+  @IsIn(courierStatus)
+  @IsOptional()
+  status?: AppEntity.CourierStatus;
+
   @Length(1, 50)
   @IsOptional()
   firstName?: string;
@@ -76,11 +117,12 @@ const contain: (keyof Order)[] = [
 ];
 
 class CourierOrdersFilterDto implements DeepPartial<Order> {
-  @ApiPropertyOptional({
-    enum: statusArray,
-    isArray: true,
-    name: 'filters[status]',
-  })
+  // not supported
+  // @ApiPropertyOptional({
+  //   enum: statusArray,
+  //   isArray: true,
+  //   name: 'filters[status]',
+  // })
   @IsIn(statusArray, { each: true })
   @ArrayMinSize(1)
   @IsOptional()

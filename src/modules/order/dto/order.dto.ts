@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -43,6 +44,10 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   description?: string;
 
   @IsDateString()
+  @ApiPropertyOptional({
+    description:
+      "If you want the order to be scheduled. Otherwise, it'll be scheduled for immediate delivery.",
+  })
   scheduledDate?: Date;
 
   @Type(() => OrderAddressDto)

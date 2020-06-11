@@ -23,13 +23,10 @@ export class UserService {
     switch (type) {
       case 'customer':
         return this.customerRepo;
-      //   break;
       case 'courier':
         return this.courierRepo;
-      //   break;
       case 'manager':
         return this.managerRepo;
-      //   break;
       default:
         throw new BadRequestException('invalid userType');
     }

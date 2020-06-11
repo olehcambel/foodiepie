@@ -5,7 +5,7 @@ import { SALT_LENGTH } from '../../common/constants';
 import { Customer } from '../../entities/customer.entity';
 import { geneHash } from '../../lib/hash';
 import { CreateCustomerDto } from '../auth/dto/auth.dto';
-import { UpdateCustomerDto } from './dto/customer.dto';
+import { UpdateCustomerDto, UpdateCustomerFullDto } from './dto/customer.dto';
 
 @Injectable()
 export class CustomerService {
@@ -14,11 +14,26 @@ export class CustomerService {
     private readonly customerRepo: Repository<Customer>,
   ) {}
 
+  private isAffected(affected: number): void {
+    if (!affected) {
+      throw new BadRequestException('failed to update. not found');
+    }
+  }
+
   async update(id: number, params: UpdateCustomerDto): Promise<Customer> {
     await this.customerRepo.update(id, params);
     // TODO: add parameter { returnValue: bool } -> true or data
     return this.find(id);
     // return true;
+  }
+
+  async updateFull(
+    id: number,
+    params: UpdateCustomerFullDto,
+  ): Promise<boolean> {
+    const res = await this.customerRepo.update(id, params);
+    this.isAffected(res.affected);
+    return true;
   }
 
   async delete(id: number): Promise<boolean> {

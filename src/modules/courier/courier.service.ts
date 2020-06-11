@@ -1,15 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindConditions } from 'typeorm';
-import { SALT_LENGTH, PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
+import { FindConditions, Repository } from 'typeorm';
+import { PAGE_LIMIT, PAGE_OFFSET, SALT_LENGTH } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
+import { Order } from '../../entities/order.entity';
 import { geneHash } from '../../lib/hash';
+import { CouriersResDto } from './dto/courier-res.dto';
 import {
   CreateCandidate,
   GetCourierOrdersDto,
+  GetCouriersDto,
   UpdateCourierDto,
+  UpdateCourierFullDto,
 } from './dto/courier.dto';
-import { Order } from '../../entities/order.entity';
 
 @Injectable()
 export class CourierService {
@@ -20,6 +23,12 @@ export class CourierService {
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
   ) {}
+
+  private isAffected(affected: number): void {
+    if (!affected) {
+      throw new BadRequestException('failed to update. not found');
+    }
+  }
 
   async create(params: CreateCandidate): Promise<number> {
     await this.emailExist(params.email);
@@ -56,6 +65,27 @@ export class CourierService {
       ],
       relations: ['language'],
     });
+  }
+
+  async findAll(params: GetCouriersDto): Promise<CouriersResDto> {
+    const [data, count] = await this.courierRepo.findAndCount({
+      take: params.limit || PAGE_LIMIT,
+      skip: params.offset || PAGE_OFFSET,
+    });
+
+    return { data, count };
+  }
+
+  async updateFull(id: number, params: UpdateCourierFullDto): Promise<boolean> {
+    const res = await this.courierRepo.update(id, params);
+    this.isAffected(res.affected);
+    return true;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const res = await this.courierRepo.update(id, { status: 'deleted' });
+    this.isAffected(res.affected);
+    return true;
   }
 
   async emailExist(email: string): Promise<void> {

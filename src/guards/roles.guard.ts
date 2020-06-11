@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
 
   private checkUserType(handler: Function, user: JWTReq.TokenPayload): boolean {
     const userType = this.reflector.get(USER_TYPE_METADATA_KEY, handler);
-    return userType && userType === user.type ? true : false;
+    return userType && userType === user.type;
   }
 
   private isPublic(ctx: Function): boolean | undefined {
