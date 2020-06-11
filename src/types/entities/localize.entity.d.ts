@@ -1,5 +1,5 @@
 declare namespace AppEntity {
-  type UserType = 'customer';
+  // type UserType = 'customer';
 
   interface Timestamp {
     createdAt: Date;

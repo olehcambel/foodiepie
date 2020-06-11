@@ -1,27 +1,32 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
-import { CustomerService } from '../customer/customer.service';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { Connection, Repository } from 'typeorm';
+import { Manager } from '../../entities/manager.entity';
 import { ManagerModule } from './manager.module';
 import { ManagerService } from './manager.service';
 
 describe('ManagerService', () => {
-  let conn: Connection;
   let service: ManagerService;
+  // let customerRepo: Repository<Manager>;
+  let conn: Connection;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [TypeOrmModule.forRoot(), ManagerModule],
-    })
-      .overrideProvider(CustomerService)
-      .useValue(customerService)
-      .compile();
+      providers: [
+        {
+          provide: getRepositoryToken(Manager),
+          useClass: Repository,
+        },
+      ],
+    }).compile();
 
     service = module.get<ManagerService>(ManagerService);
+    // customerRepo = module.get<Repository<Manager>>(getRepositoryToken(Manager));
     conn = module.get<Connection>(Connection);
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     if (conn) {
       await conn.close();
     }

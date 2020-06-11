@@ -1,4 +1,6 @@
 declare namespace AppEntity {
+  type UserType = 'customer' | 'courier' | 'manager';
+
   type CourierStatus =
     | 'deleted'
     | 'pending'
@@ -31,4 +33,23 @@ declare namespace AppEntity {
     status: CustomerStatus;
     language: Language;
   }
+
+  type EmployeeStatus = 'active' | 'deleted';
+  interface Manager extends Timestamp {
+    id: number;
+    status: EmployeeStatus;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    passwordHash: string;
+    passwordSalt: string;
+    // permission: string;
+  }
+
+  type Fields = 'id' | 'email' | 'passwordHash' | 'passwordSalt';
+  // take common fields between all user types
+  type User = Pick<Customer, Fields> &
+    Pick<Courier, Fields> &
+    Pick<Manager, Fields>;
+  //  & { type: UserType; };
 }

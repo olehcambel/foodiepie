@@ -68,6 +68,9 @@ export class Order implements AppEntity.Order {
   })
   courier?: Courier;
 
+  @Column({ name: 'courierId', nullable: true })
+  courierID?: number;
+
   @OneToOne(() => OrderAddress, (oa) => oa.address, {
     cascade: ['update', 'insert'],
   })

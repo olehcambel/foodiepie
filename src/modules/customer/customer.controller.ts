@@ -13,20 +13,20 @@ export class CustomerController {
 
   @Get('me')
   @ApiUserType('customer')
-  getUser(@Req() req: JWTReq.Customer): Promise<Customer> {
+  getUser(@Req() req: JWTReq.User): Promise<Customer> {
     return this.service.find(req.user.id);
   }
 
   @Delete('me')
   @ApiUserType('customer')
-  deleteUser(@Req() req: JWTReq.Customer): Promise<boolean> {
+  deleteUser(@Req() req: JWTReq.User): Promise<boolean> {
     return this.service.delete(req.user.id);
   }
 
   @Put('me')
   @ApiUserType('customer')
   updateUser(
-    @Req() req: JWTReq.Customer,
+    @Req() req: JWTReq.User,
     @Body() params: UpdateCustomerDto,
   ): Promise<Customer> {
     return this.service.update(req.user.id, params);

@@ -1,16 +1,24 @@
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
   Get,
-  NotImplementedException,
+  ParseIntPipe,
+  Post,
   Put,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CourierService } from './courier.service';
-import { Courier } from '../../entities/courier.entity';
-import { CreateCandidate } from './dto/courier.dto';
 import { Public } from '../../decorators/access.decorator';
+import { ApiUserType } from '../../decorators/user-type.decorator';
+import { Courier } from '../../entities/courier.entity';
+import { Order } from '../../entities/order.entity';
+import { CourierService } from './courier.service';
+import {
+  CreateCandidate,
+  GetCourierOrdersDto,
+  UpdateCourierDto,
+} from './dto/courier.dto';
 
 @Controller('couriers')
 @ApiBearerAuth()
@@ -20,27 +28,40 @@ export class CourierController {
 
   @Post('candidates')
   @Public()
-  createCandidate(@Body() params: CreateCandidate): Promise<Courier> {
+  createCandidate(@Body() params: CreateCandidate): Promise<number> {
     return this.service.create(params);
   }
 
   @Get('orders')
-  getOrders(): Promise<void> {
-    throw new NotImplementedException();
+  @ApiUserType('courier')
+  getOrders(
+    @Query() params: GetCourierOrdersDto,
+    @Req() req: JWTReq.User,
+  ): Promise<Order[]> {
+    return this.service.getOrders(req.user.id, params);
   }
 
-  @Post('orders/:orderId/accept')
-  acceptOrder(): Promise<void> {
-    throw new NotImplementedException();
+  @Put('orders/:orderId/accept')
+  @ApiUserType('courier')
+  acceptOrder(
+    @Query('orderId', ParseIntPipe) orderID: number,
+    @Req() req: JWTReq.User,
+  ): Promise<Order> {
+    return this.service.acceptOrder(req.user.id, orderID);
   }
 
   @Get('me')
-  getMe(): Promise<void> {
-    throw new NotImplementedException();
+  @ApiUserType('courier')
+  getMe(@Req() req: JWTReq.User): Promise<Courier> {
+    return this.service.find(req.user.id);
   }
 
   @Put('me')
-  updateMe(): Promise<void> {
-    throw new NotImplementedException();
+  @ApiUserType('courier')
+  updateMe(
+    @Req() req: JWTReq.User,
+    @Body() params: UpdateCourierDto,
+  ): Promise<Courier> {
+    return this.service.update(req.user.id, params);
   }
 }

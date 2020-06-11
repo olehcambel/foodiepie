@@ -79,14 +79,12 @@ export class GetStoresDto {
   offset?: number;
 
   @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
-  @IsOptional()
   @IsIn(fields, { each: true })
   @ArrayMinSize(1)
   @IsOptional()
   fields?: (keyof Store)[];
 
   @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contain[]' })
-  @IsOptional()
   @ArrayMinSize(1)
   @IsIn(contain, { each: true })
   @IsOptional()
@@ -104,6 +102,7 @@ class ProductTranslationDto implements DeepPartial<ProductTranslation> {
   title: string;
 
   @Length(1, 255)
+  @IsOptional()
   description?: string;
 
   @Type(() => LanguageRefDto)

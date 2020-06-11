@@ -1,35 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { getToken } from '../../common/jwt/jwt';
+import { compareHash } from '../../lib/hash';
 import { CustomerService } from '../customer/customer.service';
 import { TokenRes } from './dto/auth-res.dto';
-import { LoginDto, CreateCustomerDto } from './dto/auth.dto';
-import { Customer } from '../../entities/customer.entity';
-import { getToken } from '../../common/jwt/jwt';
+import { CreateCustomerDto, LoginDto } from './dto/auth.dto';
+import { UserService } from './user.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private customerService: CustomerService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly customerService: CustomerService,
+  ) {}
+
+  async validateUser(params: LoginDto): Promise<AppEntity.User> {
+    const user = await this.userService.findByEmail(params);
+    if (
+      !user ||
+      !compareHash(params.password, user.passwordHash, user.passwordSalt)
+    ) {
+      throw new BadRequestException('Invalid username or password');
+    }
+
+    return user;
+  }
 
   async getToken(params: LoginDto): Promise<TokenRes> {
-    const user = await this.customerService.findByCreds(params);
+    const user = await this.validateUser(params);
 
-    return this.createToken(user);
+    return this.createToken(user, params.userType);
   }
 
   async createCustomer(params: CreateCustomerDto): Promise<TokenRes> {
     const user = await this.customerService.create(params);
 
-    return this.createToken(user);
+    return this.createToken(user, 'customer');
   }
 
-  // getRefreshToken(): Promise<TokenRes> {
-  //
-  // }
+  // getRefreshToken(): Promise<TokenRes> { }
 
-  // TODO: should be both for customer and courier
-  private createToken(params: Customer): JWTReq.Token {
+  private createToken(
+    params: AppEntity.User,
+    type: AppEntity.UserType,
+  ): JWTReq.Token {
     const data: JWTReq.TokenPayload = {
       id: params.id,
-      type: 'customer',
+      type,
     };
 
     // TODO: add session

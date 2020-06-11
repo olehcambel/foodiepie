@@ -33,7 +33,7 @@ export class StoreController {
   @Post()
   @ApiUserType('customer')
   createStore(
-    @Req() req: JWTReq.Customer,
+    @Req() req: JWTReq.User,
     @Body() params: CreateStoreDto,
   ): Promise<Store> {
     return this.service.createStore(req.user.id, params);
@@ -54,7 +54,7 @@ export class StoreController {
   @Put(':storeId')
   @ApiUserType('customer')
   updateStore(
-    @Req() req: JWTReq.Customer,
+    @Req() req: JWTReq.User,
     @Param('storeId', ParseIntPipe) storeID: number,
     @Body() params: UpdateStoreDto,
   ): Promise<Store> {
@@ -64,7 +64,7 @@ export class StoreController {
   @Delete(':storeId')
   @ApiUserType('customer')
   deleteStore(
-    @Req() req: JWTReq.Customer,
+    @Req() req: JWTReq.User,
     @Param('storeId', ParseIntPipe) storeID: number,
   ): Promise<boolean> {
     return this.service.deleteStore(req.user.id, storeID);
@@ -80,7 +80,7 @@ export class StoreController {
 
   @Put(':storeId/menus')
   saveMenus(
-    @Req() req: JWTReq.Customer,
+    @Req() req: JWTReq.User,
     @Param('storeId', ParseIntPipe) storeID: number,
     @Body() params: SaveProductsDto,
   ): Promise<Product[]> {

@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SALT_LENGTH } from '../../common/constants';
 import { Customer } from '../../entities/customer.entity';
-import { compareHash, geneHash } from '../../lib/hash';
-import { CreateCustomerDto, LoginDto } from '../auth/dto/auth.dto';
+import { geneHash } from '../../lib/hash';
+import { CreateCustomerDto } from '../auth/dto/auth.dto';
 import { UpdateCustomerDto } from './dto/customer.dto';
 
 @Injectable()
@@ -28,8 +28,8 @@ export class CustomerService {
 
   find(id: number): Promise<Customer> {
     return this.customerRepo.findOne(id, {
-      select: ['id', 'name', 'status', 'email', 'description'],
-      relations: ['language'],
+      select: ['id', 'name', 'status', 'email', 'description', 'imageURL'],
+      relations: ['language'], // stores
     });
   }
 
@@ -56,24 +56,6 @@ export class CustomerService {
       status: 'active',
       language: params.language,
     });
-
-    return user;
-  }
-
-  async findByCreds(params: LoginDto): Promise<Customer> {
-    const userKeys: (keyof Customer)[] = ['id', 'passwordHash', 'passwordSalt'];
-    const user = await this.customerRepo
-      .createQueryBuilder('c')
-      .select(userKeys.map((k) => `c.${k}`))
-      .where({ email: params.email })
-      .getOne();
-
-    if (
-      !user ||
-      !compareHash(params.password, user.passwordHash, user.passwordSalt)
-    ) {
-      throw new BadRequestException('Invalid username/password');
-    }
 
     return user;
   }

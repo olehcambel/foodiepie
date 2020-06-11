@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 import { Product } from '../../entities/product.entity';
 import { Store } from '../../entities/store.entity';
+import { getDelta } from '../../lib/object';
 import { StoresResDto } from './dto/store-res.dto';
 import {
   CreateStoreDto,
@@ -11,16 +12,6 @@ import {
   SaveProductsDto,
   UpdateStoreDto,
 } from './dto/store.dto';
-
-// TODO: MV to object lib
-// K extends keyof ??
-function mapFromArray<T>(array: T[], prop: string): Record<any, T> {
-  const map: Record<any, T> = {};
-  for (let i = 0; i < array.length; i++) {
-    map[array[i][prop]] = array[i];
-  }
-  return map;
-}
 
 @Injectable()
 export class StoreService {
@@ -41,11 +32,11 @@ export class StoreService {
 
   async getStores(params: GetStoresDto): Promise<StoresResDto> {
     const [data, count] = await this.storeRepo.findAndCount({
+      select: params.fields,
+      relations: params.contains,
+      where: { status: 'active' },
       take: params.limit || PAGE_LIMIT,
       skip: params.offset || PAGE_OFFSET,
-      relations: params.contains,
-      select: params.fields,
-      where: { status: 'active' },
     });
 
     return { data, count };
@@ -94,6 +85,7 @@ export class StoreService {
     storeID: number,
     params: SaveProductsDto,
   ): Promise<Product[]> {
+    // TODO: check if language id is valid. reference error
     const store = await this.storeRepo.findOne({
       select: ['id'],
       where: { id: storeID, owner: { id: userID } },
@@ -104,36 +96,29 @@ export class StoreService {
     }
 
     const curMenu = await this.productRepo.find({ where: { store: storeID } });
-    // const changed: Product[] = []
-    const deleted: Product[] = [];
     const newMenu: Product[] = [];
 
-    const mapOld = mapFromArray(curMenu, 'externalID');
-    const mapNew = mapFromArray(params.data, 'externalID');
-    for (const id in mapOld) {
-      if (!mapNew[id]) {
-        deleted.push(mapOld[id]);
-      } else if (mapNew[id].externalID === mapOld[id].externalID) {
-        const newP = this.productRepo.create(mapNew[id]);
-        newP.store = this.storeRepo.create({ id: storeID });
+    const delta = getDelta(
+      curMenu,
+      this.productRepo.create(params.data),
+      'externalID',
+      // (a, b) => a.externalID === b.externalID,
+      (o, n) => {
+        if (n.externalID === o.externalID) {
+          n.id = o.id;
+          return true;
+        }
+        return false;
+      },
+    );
 
-        newP.id = mapOld[id].id;
-        newMenu.push(newP);
-      }
+    for (const p of delta.added.concat(delta.changed)) {
+      p.store = this.storeRepo.create({ id: storeID });
+      newMenu.push(p);
     }
 
-    for (const id in mapNew) {
-      if (!mapOld[id]) {
-        const newP = this.productRepo.create(mapNew[id]);
-        newP.store = this.storeRepo.create({ id: storeID });
-
-        newMenu.push(newP);
-      }
-    }
-    if (deleted.length) {
-      await this.productRepo.remove(deleted);
-    }
-    // FIXME: when updating the same row - product translation removes productID
+    // if (delta.deleted.length) { }
+    await this.productRepo.remove(delta.deleted);
     await this.productRepo.save(newMenu);
 
     return newMenu;

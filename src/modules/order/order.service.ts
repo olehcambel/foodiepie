@@ -25,7 +25,6 @@ export class OrderService {
 
     for (let i = 0; i < products.length; i++) {
       const p = products[i];
-      // count total price
       totalPrice += Number(p.price);
 
       orderItems.push({
@@ -46,9 +45,9 @@ export class OrderService {
 
       scheduledDate: params.scheduledDate || new Date(),
       status: 'scheduled',
-      price: String(totalPrice),
-      // TODO: get currency from user ???
-      currency: { id: 1 },
+      totalPrice: String(totalPrice),
+      // TODO: how to calculate delivery price (location)?
+      // deliveryPrice: 40,
       customer: { id: customerID },
       orderAddress: {
         address: params.orderAddress.address,

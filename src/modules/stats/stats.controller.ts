@@ -21,7 +21,7 @@ export class StatsController {
   }
   // getOrders(
   //   @Query() params: GetCustomerOrders,
-  //   @Req() req: JWTReq.Customer,
+  //   @Req() req: JWTReq.User,
   // ): Promise<Order[]> {
   //   return this.service.getOrders(req.user.id, params);
   // }

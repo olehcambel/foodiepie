@@ -2,16 +2,15 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
-  IsArray,
   IsDateString,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsOptional,
   Length,
+  Max,
   Min,
   ValidateNested,
-  Max,
 } from 'class-validator';
 import { DeepPartial } from 'typeorm';
 import { OrderAddress } from '../../../entities/order-address.entity';
@@ -34,6 +33,7 @@ class OrderItemDto implements DeepPartial<OrderItem> {
   id: number;
 
   @Min(1)
+  @Max(100)
   quantity: number;
 }
 
@@ -52,7 +52,7 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   @ArrayMinSize(1)
   @ArrayMaxSize(30)
   @Type(() => OrderItemDto)
-  @IsArray()
+  @ValidateNested({ each: true })
   products: OrderItemDto[];
 }
 
@@ -83,7 +83,6 @@ export class GetCustomerOrders {
   offset?: number;
 
   // @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
-  // @IsOptional()
   // @IsIn(fields, { each: true })
   // @IsOptional()
   // fields?: (keyof AppEntity.Order)[];

@@ -7,6 +7,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { jwtVerify } from '../common/jwt/jwt';
 import { IS_PUBLIC_METADATA_KEY } from '../decorators/access.decorator';
+import { USER_TYPE_METADATA_KEY } from '../decorators/user-type.decorator';
 
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -33,10 +34,18 @@ export class RolesGuard implements CanActivate {
     }
     req.user = data;
 
+    if (handler) return this.checkUserType(handler, data);
+    if (thisClass) return this.checkUserType(handler, data);
+
     return true;
   }
 
-  isPublic(ctx: Function): boolean | undefined {
+  private checkUserType(handler: Function, user: JWTReq.TokenPayload): boolean {
+    const userType = this.reflector.get(USER_TYPE_METADATA_KEY, handler);
+    return userType && userType === user.type ? true : false;
+  }
+
+  private isPublic(ctx: Function): boolean | undefined {
     return this.reflector.get(IS_PUBLIC_METADATA_KEY, ctx);
   }
 }
