@@ -9,6 +9,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '10',
     status: 'active',
     store: { id: 1 },
+    externalID: 'ext_1',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -16,6 +18,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '100',
     status: 'active',
     store: { id: 2 },
+    externalID: 'ext_2',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -23,6 +27,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '200',
     status: 'active',
     store: { id: 4 },
+    externalID: 'ext_3',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -30,6 +36,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '5',
     status: 'active',
     store: { id: 2 },
+    externalID: 'ext_4',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -37,6 +45,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '2',
     status: 'active',
     store: { id: 2 },
+    externalID: 'ext_5',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -44,6 +54,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '150',
     status: 'active',
     store: { id: 1 },
+    externalID: 'ext_6',
+    translations: [],
     // currency: { id: 2 },
   },
   {
@@ -51,6 +63,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '399',
     status: 'deleted',
     store: { id: 2 },
+    externalID: 'ext_7',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -58,6 +72,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '24',
     status: 'active',
     store: { id: 4 },
+    externalID: 'ext_8',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -65,6 +81,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '9.99',
     status: 'active',
     store: { id: 2 },
+    externalID: 'ext_9',
+    translations: [],
     // currency: { id: 1 },
   },
   {
@@ -72,6 +90,8 @@ export const seed: DeepPartial<Product>[] = [
     price: '10',
     status: 'active',
     store: { id: 3 },
+    externalID: 'ext_10',
+    translations: [],
     // currency: { id: 1 },
   },
 ];

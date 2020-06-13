@@ -81,6 +81,10 @@
       "^.+\\.(t)s$": "ts-jest"
     },
     "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [
+      "./src/migrations",
+      "./src/seeds"
+    ],
     "testEnvironment": "node"
   }
 }

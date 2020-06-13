@@ -8,11 +8,12 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../decorators/access.decorator';
 import { ApiUserType } from '../../decorators/user-type.decorator';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
+import { OrdersResDto } from '../order/dto/order-res.dto';
 import { CourierService } from './courier.service';
 import {
   CreateCandidate,
@@ -38,7 +39,7 @@ export class CourierController {
   getOrders(
     @Query() params: GetCourierOrdersDto,
     @Req() req: JWTReq.User,
-  ): Promise<Order[]> {
+  ): Promise<OrdersResDto> {
     return this.service.getOrders(req.user.id, params);
   }
 
@@ -55,7 +56,7 @@ export class CourierController {
   @Get('me')
   @ApiUserType('courier')
   getMe(@Req() req: JWTReq.User): Promise<Courier> {
-    return this.service.find(req.user.id);
+    return this.service.findOne(req.user.id);
   }
 
   @Put('me')

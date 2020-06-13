@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getManager } from 'typeorm';
 import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 import { Product } from '../../entities/product.entity';
 import { Store } from '../../entities/store.entity';
@@ -12,6 +12,7 @@ import {
   SaveProductsDto,
   UpdateStoreDto,
 } from './dto/store.dto';
+import { ProductTranslation } from '../../entities/product-translation.entity';
 
 @Injectable()
 export class StoreService {
@@ -20,7 +21,7 @@ export class StoreService {
     private readonly storeRepo: Repository<Store>,
 
     @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
+    private readonly productRepo: Repository<Product>, // @InjectRepository(ProductTranslation) // private readonly productTranslationRepo: Repository<ProductTranslation>,
   ) {}
 
   createStore(userID: number, params: CreateStoreDto): Promise<Store> {
@@ -80,23 +81,34 @@ export class StoreService {
     });
   }
 
+  /**
+   * FIXME: is not working as expected
+   * instead of deleting each time productTranslations - should update if
+   * storeID and languageID is remain the same as in DB.
+   * FIXME: check if language id is valid. reference error occured
+   */
   async saveMenus(
     userID: number,
     storeID: number,
     params: SaveProductsDto,
   ): Promise<Product[]> {
-    // TODO: check if language id is valid. reference error
-    const store = await this.storeRepo.findOne({
+    const store = await this.storeRepo.findOne(storeID, {
       select: ['id'],
-      where: { id: storeID, owner: { id: userID } },
+      where: { /* id: storeID, */ owner: { id: userID } },
     });
     if (!store) {
-      // this.isAffected(0)
       throw new ForbiddenException();
     }
 
-    const curMenu = await this.productRepo.find({ where: { store: storeID } });
+    const curMenu = await this.productRepo
+      .createQueryBuilder('p')
+      .select(['p.id', 'p.externalID'])
+      .addSelect('pT.id')
+      .leftJoin('p.translations', 'pT')
+      .where('p.store = :storeID', { storeID })
+      .getMany();
     const newMenu: Product[] = [];
+    const oldTP: ProductTranslation[] = [];
 
     const delta = getDelta(
       curMenu,
@@ -106,9 +118,12 @@ export class StoreService {
       (o, n) => {
         if (n.externalID === o.externalID) {
           n.id = o.id;
-          return true;
+          oldTP.push(...o.translations);
+
+          // means that data is not equal and should be updated
+          return false;
         }
-        return false;
+        return true;
       },
     );
 
@@ -117,9 +132,13 @@ export class StoreService {
       newMenu.push(p);
     }
 
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.remove(oldTP);
+      await transactionalEntityManager.remove(delta.deleted);
+      await transactionalEntityManager.save(newMenu);
+    });
+
     // if (delta.deleted.length) { }
-    await this.productRepo.remove(delta.deleted);
-    await this.productRepo.save(newMenu);
 
     return newMenu;
   }

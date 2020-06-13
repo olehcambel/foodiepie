@@ -1,4 +1,6 @@
 declare namespace AppEntity {
+  // https://my.vertabelo.com/model/irz4MeTvVTehhaqsm35pN1PaoI1Lg4lg
+
   type UserType = 'customer' | 'courier' | 'manager';
 
   type CourierStatus =

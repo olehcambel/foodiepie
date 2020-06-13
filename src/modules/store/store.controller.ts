@@ -79,6 +79,7 @@ export class StoreController {
   }
 
   @Put(':storeId/menus')
+  @ApiUserType('customer')
   saveMenus(
     @Req() req: JWTReq.User,
     @Param('storeId', ParseIntPipe) storeID: number,

@@ -19,7 +19,7 @@ export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
 export class UpdateCustomerFullDto implements DeepPartial<AppEntity.Customer> {
   @IsIn(customerStatus)
   @IsOptional()
-  status: AppEntity.CustomerStatus;
+  status?: AppEntity.CustomerStatus;
 
   @Length(1, 50)
   @IsOptional()

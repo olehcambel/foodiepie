@@ -114,11 +114,11 @@ class ProductTranslationDto implements DeepPartial<ProductTranslation> {
 class SaveProduct implements DeepPartial<Product> {
   // @Expose({ name: 'externalId' })
   @Length(1, 50)
-  @IsOptional()
   externalID: string;
 
   @Length(1, 255)
-  imageURL: string;
+  @IsOptional()
+  imageURL?: string;
 
   @IsDecimal()
   price: string;

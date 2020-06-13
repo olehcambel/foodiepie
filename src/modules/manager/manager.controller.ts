@@ -18,6 +18,7 @@ import {
 } from '../courier/dto/courier.dto';
 import { CustomerService } from '../customer/customer.service';
 import { UpdateCustomerFullDto } from '../customer/dto/customer.dto';
+import { Customer } from '../../entities/customer.entity';
 
 @Controller('managers')
 @ApiTags('Manager')
@@ -31,13 +32,13 @@ export class ManagerController {
   @Get('couriers')
   @ApiUserType('manager')
   getCouriers(@Query() params: GetCouriersDto): Promise<CouriersResDto> {
-    return this.courierService.findAll(params);
+    return this.courierService.find(params);
   }
 
   @Get('couriers/:courierId')
   @ApiUserType('manager')
   getCourier(@Param('id', ParseIntPipe) courierID: number): Promise<Courier> {
-    return this.courierService.find(courierID);
+    return this.courierService.findOne(courierID);
   }
 
   @Put('couriers/:courierId')
@@ -45,8 +46,8 @@ export class ManagerController {
   updateCourier(
     @Query('courierId', ParseIntPipe) courierID: number,
     @Body() params: UpdateCourierFullDto,
-  ): Promise<boolean> {
-    return this.courierService.updateFull(courierID, params);
+  ): Promise<Courier> {
+    return this.courierService.update(courierID, params);
   }
 
   @Put('couriers/:courierId')
@@ -62,7 +63,7 @@ export class ManagerController {
   updateCustomer(
     @Query('courierId', ParseIntPipe) customerID: number,
     @Body() params: UpdateCustomerFullDto,
-  ): Promise<boolean> {
-    return this.customerService.updateFull(customerID, params);
+  ): Promise<Customer> {
+    return this.customerService.update(customerID, params);
   }
 }

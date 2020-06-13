@@ -14,7 +14,7 @@ export class CustomerController {
   @Get('me')
   @ApiUserType('customer')
   getUser(@Req() req: JWTReq.User): Promise<Customer> {
-    return this.service.find(req.user.id);
+    return this.service.findOne(req.user.id);
   }
 
   @Delete('me')

@@ -2,6 +2,8 @@ import { ApiHideProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Language } from './language.entity';
 
+// TODO: export abstract class BaseUserEntity {}
+
 export const statusArray: AppEntity.CustomerStatus[] = [
   'active',
   'blocked',

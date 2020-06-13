@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { SALT_LENGTH } from '../../common/constants';
 import { Customer } from '../../entities/customer.entity';
 import { geneHash } from '../../lib/hash';
 import { CreateCustomerDto } from '../auth/dto/auth.dto';
-import { UpdateCustomerDto, UpdateCustomerFullDto } from './dto/customer.dto';
 
 @Injectable()
 export class CustomerService {
@@ -17,46 +16,6 @@ export class CustomerService {
   private isAffected(affected: number): void {
     if (!affected) {
       throw new BadRequestException('failed to update. not found');
-    }
-  }
-
-  async update(id: number, params: UpdateCustomerDto): Promise<Customer> {
-    await this.customerRepo.update(id, params);
-    // TODO: add parameter { returnValue: bool } -> true or data
-    return this.find(id);
-    // return true;
-  }
-
-  async updateFull(
-    id: number,
-    params: UpdateCustomerFullDto,
-  ): Promise<boolean> {
-    const res = await this.customerRepo.update(id, params);
-    this.isAffected(res.affected);
-    return true;
-  }
-
-  async delete(id: number): Promise<boolean> {
-    await this.customerRepo.update(id, { status: 'deleted' });
-    return true;
-  }
-
-  find(id: number): Promise<Customer> {
-    return this.customerRepo.findOne(id, {
-      select: ['id', 'name', 'status', 'email', 'description', 'imageURL'],
-      relations: ['language'], // stores
-    });
-  }
-
-  async emailExist(email: string): Promise<void> {
-    // if (err.code === 'ER_DUP_ENTRY') {
-    const isExist =
-      (await this.customerRepo
-        .createQueryBuilder()
-        .where({ email })
-        .getCount()) > 0;
-    if (isExist) {
-      throw new BadRequestException('User already exist');
     }
   }
 
@@ -73,5 +32,39 @@ export class CustomerService {
     });
 
     return user;
+  }
+
+  findOne(id: number): Promise<Customer> {
+    return this.customerRepo.findOne(id, {
+      select: ['id', 'name', 'status', 'email', 'description', 'imageURL'],
+      relations: ['language'], // stores
+    });
+  }
+
+  async update(
+    id: number,
+    params: DeepPartial<AppEntity.Customer>,
+  ): Promise<Customer> {
+    const res = await this.customerRepo.update(id, params);
+    this.isAffected(res.affected);
+    return this.findOne(id);
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const res = await this.customerRepo.update(id, { status: 'deleted' });
+    this.isAffected(res.affected);
+    return true;
+  }
+
+  async emailExist(email: string): Promise<void> {
+    // if (err.code === 'ER_DUP_ENTRY') {
+    const isExist =
+      (await this.customerRepo
+        .createQueryBuilder()
+        .where({ email })
+        .getCount()) > 0;
+    if (isExist) {
+      throw new BadRequestException('User already exist');
+    }
   }
 }

@@ -1,5 +1,5 @@
 // , K extends keyof T ??
-function mapFromArray<T>(arr: T[], prop: string): Record<string, T> {
+export function mapFromArray<T>(arr: T[], prop: string): Record<string, T> {
   return arr.reduce((map, obj) => {
     map[obj[prop]] = obj;
     return map;

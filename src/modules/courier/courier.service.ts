@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindConditions, Repository } from 'typeorm';
+import { DeepPartial, FindConditions, Repository } from 'typeorm';
 import { PAGE_LIMIT, PAGE_OFFSET, SALT_LENGTH } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
@@ -10,9 +10,8 @@ import {
   CreateCandidate,
   GetCourierOrdersDto,
   GetCouriersDto,
-  UpdateCourierDto,
-  UpdateCourierFullDto,
 } from './dto/courier.dto';
+import { OrdersResDto } from '../order/dto/order-res.dto';
 
 @Injectable()
 export class CourierService {
@@ -47,12 +46,7 @@ export class CourierService {
     return id;
   }
 
-  async update(id: number, params: UpdateCourierDto): Promise<Courier> {
-    await this.courierRepo.update(id, params);
-    return this.find(id);
-  }
-
-  find(id: number): Promise<Courier> {
+  findOne(id: number): Promise<Courier> {
     return this.courierRepo.findOne(id, {
       select: [
         'id',
@@ -67,7 +61,7 @@ export class CourierService {
     });
   }
 
-  async findAll(params: GetCouriersDto): Promise<CouriersResDto> {
+  async find(params?: GetCouriersDto): Promise<CouriersResDto> {
     const [data, count] = await this.courierRepo.findAndCount({
       take: params.limit || PAGE_LIMIT,
       skip: params.offset || PAGE_OFFSET,
@@ -76,10 +70,13 @@ export class CourierService {
     return { data, count };
   }
 
-  async updateFull(id: number, params: UpdateCourierFullDto): Promise<boolean> {
+  async update(
+    id: number,
+    params: DeepPartial<AppEntity.Courier>,
+  ): Promise<Courier> {
     const res = await this.courierRepo.update(id, params);
     this.isAffected(res.affected);
-    return true;
+    return this.findOne(id);
   }
 
   async delete(id: number): Promise<boolean> {
@@ -115,17 +112,22 @@ export class CourierService {
     return order;
   }
 
-  getOrders(courierID: number, params: GetCourierOrdersDto): Promise<Order[]> {
+  async getOrders(
+    courierID: number,
+    params?: GetCourierOrdersDto,
+  ): Promise<OrdersResDto> {
     const where: FindConditions<Order> = {
       ...params.filters,
       courier: { id: courierID },
     };
-    return this.orderRepo.find({
+    const [data, count] = await this.orderRepo.findAndCount({
       select: params.fields,
       relations: params.contains,
       where,
       take: params.limit || PAGE_LIMIT,
       skip: params.offset || PAGE_OFFSET,
     });
+
+    return { data, count };
   }
 }
