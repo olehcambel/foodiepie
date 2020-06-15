@@ -7,11 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Courier } from './courier.entity';
-import { Currency } from './currency.entity';
 import { Customer } from './customer.entity';
 import { OrderAddress } from './order-address.entity';
 import { OrderItem } from './order-item.entity';
-import { StoreAddress } from './store-address.entity';
+import { StoreLocation } from './store-location.entity';
 
 export const statusArray: AppEntity.OrderStatus[] = [
   'scheduled',
@@ -25,23 +24,26 @@ export class Order implements AppEntity.Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 255, nullable: true })
-  description?: string;
-
-  @Column({ width: 1, default: false })
-  isPaid: boolean;
-
-  @Column('decimal', { precision: 9, scale: 2 })
-  price: string;
-
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
   status: AppEntity.OrderStatus;
+
+  @Column({ length: 255, nullable: true })
+  description?: string;
 
   @Column({ type: 'timestamp' })
   scheduledDate: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  deliveredAt?: Date;
+  finishedAt?: Date;
+
+  @Column({ width: 1, default: false })
+  isPaid: boolean;
+
+  @Column('decimal', { precision: 9, scale: 2 })
+  totalPrice: string;
+
+  @Column('decimal', { precision: 9, scale: 2, default: '0' })
+  deliveryPrice: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt: Date;
@@ -53,22 +55,21 @@ export class Order implements AppEntity.Order {
   })
   readonly updatedAt: Date;
 
-  @ManyToOne(() => Currency, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
-  currency: Currency;
+  @ManyToOne(() => StoreLocation, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  storeLocation: StoreLocation;
 
-  @ManyToOne(() => StoreAddress, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
-  storeAddress: StoreAddress;
-
-  // TODO: should be nullable, as onDelete (set null) ?
   @ManyToOne(() => Customer, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   customer: Customer;
 
-  @ManyToOne(() => Customer, {
+  @ManyToOne(() => Courier, {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
     nullable: true,
   })
   courier?: Courier;
+
+  @Column({ name: 'courierId', nullable: true })
+  courierID?: number;
 
   @OneToOne(() => OrderAddress, (oa) => oa.address, {
     cascade: ['update', 'insert'],

@@ -1,14 +1,15 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
-  IsArray,
   IsDateString,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsOptional,
   Length,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -33,6 +34,7 @@ class OrderItemDto implements DeepPartial<OrderItem> {
   id: number;
 
   @Min(1)
+  @Max(100)
   quantity: number;
 }
 
@@ -41,7 +43,12 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   @IsOptional()
   description?: string;
 
+  @ApiPropertyOptional({
+    description:
+      "If you want the order to be scheduled. Otherwise, it'll be scheduled for immediate delivery.",
+  })
   @IsDateString()
+  @IsOptional()
   scheduledDate?: Date;
 
   @Type(() => OrderAddressDto)
@@ -51,6 +58,38 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   @ArrayMinSize(1)
   @ArrayMaxSize(30)
   @Type(() => OrderItemDto)
-  @IsArray()
+  @ValidateNested({ each: true })
   products: OrderItemDto[];
+}
+
+// TODO: if status is active -> add courier info
+// const fields: (keyof AppEntity.Order)[] = [
+//   'description',
+//   'scheduledDate',
+//   'price',
+//   'status',
+//   'currency',
+//   'storeAddress',
+//   'orderAddress',
+// ];
+
+export class GetCustomerOrders {
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(100)
+  @Type(() => Number)
+  limit?: number;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  @Max(10000)
+  @Type(() => Number)
+  offset?: number;
+
+  // @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
+  // @IsIn(fields, { each: true })
+  // @IsOptional()
+  // fields?: (keyof AppEntity.Order)[];
 }

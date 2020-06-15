@@ -1,48 +1,57 @@
 declare namespace AppEntity {
-  interface StoreType {
-    id: number;
-    name: string;
-  }
+  // interface StoreType {
+  //   id: number;
+  //   name: string;
+  // }
+
+  // interface CustomerStore {
+  //   id: number;
+  //   customer: Customer;
+  //   store: Store;
+  // }
 
   type StoreStatus = 'deleted' | 'pending' | 'active' | 'blocked' | 'rejected';
-  interface Store {
+  interface Store extends Timestamp {
     id: number;
-    name: string;
+    title: string;
     slug: string;
     description?: string;
     status: StoreStatus;
-    storeType: StoreType;
+    owner: Customer;
   }
 
-  type StoreAddressStatus = 'active' | 'deleted'; // blocked
-  interface StoreAddress extends Timestamp {
+  interface StoreLocation {
     id: number;
+    address: string;
+    postalCode: string;
     latitude: number;
     longitude: number;
-    address: string;
-    /**
-     * New Your
-     */
-    // city: City
-    /**
-     * US
-     */
-    // country: Country
-    postalCode: string;
-    rating?: number;
-    status: StoreAddressStatus;
+    //   /**
+    //    * New Your
+    //    */
+    //   // city: City
+    //   /**
+    //    * US
+    //    */
+    //   // country: Country
+    store: Store;
+  }
+
+  interface Cousine {
+    id: number;
+    name: string;
     store: Store;
   }
 
   type ProductStatus = 'active' | 'deleted';
   interface Product {
     id: number;
-    externalID?: string;
+    externalID: string;
     imageURL?: string;
     price: string;
     status: ProductStatus;
-    storeAddress: StoreAddress;
-    currency: Currency;
+    store: Store;
+    // currency: Currency;
   }
 
   interface ProductTranslation {

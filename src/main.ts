@@ -4,6 +4,7 @@ require('./config');
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
+import * as helmet from 'helmet';
 import { AppModule } from './app.module';
 import * as swagger from './common/swagger';
 import { PORT } from './config';
@@ -15,7 +16,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('v1');
-  // Middlewares
+  app.use(helmet());
   app.enableCors({ optionsSuccessStatus: 200 });
 
   const reflector = app.get(Reflector);

@@ -23,13 +23,15 @@ const options = {
   password: MYSQL_PASSWORD,
   database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
   type: 'mysql',
+  bigNumberStrings: true,
+
   // synchronize: IS_TEST,
   // dropSchema: IS_TEST,
 
   migrations: [`${dir}/migrations/*.{ts,js}`],
   entities: [`${dir}/entities/*.entity.{ts,js}`],
   subscribers: [`${dir}/subscribers/*.{ts,js}`],
-  logging: ['true', '1'].includes(MYSQL_LOG),
+  logging: IS_TEST ? false : ['true', '1'].includes(MYSQL_LOG),
   cli: {
     entitiesDir: './src/entities',
     migrationsDir: './src/migrations',

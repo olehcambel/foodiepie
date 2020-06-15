@@ -28,13 +28,13 @@ describe('get-env', () => {
     });
     it('should use default value', () => {
       const result = getEnvBool(notExistKey, true);
-      expect(result).toBeTruthy();
+      expect(result).toEqual(true);
     });
     it('should find key', () => {
       const key = getRandKey();
       process.env[key] = 'true';
       const result = getEnvBool(key);
-      expect(result).toBeTruthy();
+      expect(result).toEqual(true);
     });
     it('should throw error on not found Env', () => {
       const key = getRandKey();

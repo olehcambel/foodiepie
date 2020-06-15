@@ -1,6 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { StoreAddress } from './store-address.entity';
-import { Currency } from './currency.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  OneToMany,
+} from 'typeorm';
+import { Store } from './store.entity';
+import { ProductTranslation } from './product-translation.entity';
 
 export const statusArray: AppEntity.ProductStatus[] = ['active', 'deleted'];
 
@@ -9,8 +15,8 @@ export class Product implements AppEntity.Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50, nullable: true })
-  externalID?: string;
+  @Column({ length: 50, unique: true })
+  externalID: string;
 
   @Column({ length: 255, nullable: true })
   imageURL?: string;
@@ -21,9 +27,14 @@ export class Product implements AppEntity.Product {
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
   status: AppEntity.ProductStatus;
 
-  @ManyToOne(() => StoreAddress, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  storeAddress: StoreAddress;
+  @ManyToOne(() => Store, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  store: Store;
 
-  @ManyToOne(() => Currency, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
-  currency: Currency;
+  @OneToMany(() => ProductTranslation, (t) => t.product, {
+    cascade: ['insert', 'update'],
+  })
+  translations: ProductTranslation[];
+
+  // @ManyToOne(() => Currency, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  // currency: Currency;
 }

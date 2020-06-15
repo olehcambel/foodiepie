@@ -2,13 +2,20 @@
 
 declare namespace JWTReq {
   interface TokenPayload {
-    type: 'customer';
+    type: AppEntity.UserType;
     id: number;
   }
 
-  interface Customer extends Request {
+  interface User extends Request {
     user: TokenPayload;
   }
+  // interface Customer extends Request {
+  //   user: TokenPayload;
+  // }
+
+  // interface Courier extends Request {
+  //   user: TokenPayload
+  // }
 
   interface Token {
     accessToken: string;

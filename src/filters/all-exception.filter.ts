@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Response } from 'express';
+// import { EntityNotFound } from "typeorm";
 
 const log = console;
 
@@ -45,6 +46,8 @@ export class AllExceptionFilter implements ExceptionFilter {
     ) {
       return err;
     }
+
+    // if (err instanceof EntityNotFound)
 
     log.error(err);
     // TODO: log to sentry

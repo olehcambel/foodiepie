@@ -1,6 +1,7 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Length, Max, Min } from 'class-validator';
+import { IsIn, IsOptional, Length } from 'class-validator';
 import { DeepPartial } from 'typeorm';
+import { statusArray as customerStatus } from '../../../entities/customer.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
   @Length(1, 50)
@@ -10,37 +11,27 @@ export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
   @Length(1, 255)
   @IsOptional()
   description?: string;
+
+  @Length(1, 255)
+  @IsOptional()
+  imageURL?: string;
 }
 
-// TODO: if status is active -> add courier info
-// const fields: (keyof AppEntity.Order)[] = [
-//   'description',
-//   'scheduledDate',
-//   'price',
-//   'status',
-//   'currency',
-//   'storeAddress',
-//   'orderAddress',
-// ];
-
-export class GetCustomerOrders {
-  @IsInt()
+export class UpdateCustomerFullDto implements DeepPartial<AppEntity.Customer> {
+  @ApiProperty({ enum: customerStatus })
+  @IsIn(customerStatus)
   @IsOptional()
-  @Min(1)
-  @Max(100)
-  @Type(() => Number)
-  limit?: number;
+  status?: AppEntity.CustomerStatus;
 
-  @IsInt()
+  @Length(1, 50)
   @IsOptional()
-  @Min(1)
-  @Max(10000)
-  @Type(() => Number)
-  offset?: number;
+  name?: string;
 
-  // @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
-  // @IsOptional()
-  // @IsIn(fields, { each: true })
-  // @IsOptional()
-  // fields?: (keyof AppEntity.Order)[];
+  @Length(1, 255)
+  @IsOptional()
+  description?: string;
+
+  @Length(1, 255)
+  @IsOptional()
+  imageURL?: string;
 }

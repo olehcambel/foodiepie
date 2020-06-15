@@ -20,7 +20,7 @@
       "name": "Launch Program",
       "outputCapture": "std",
       "runtimeArgs": [],
-      "args": ["ts", "./src"],
+      "args": ["ts", "./src/main"],
       "env": {
         "TS": "true",
         "TS_NODE_FILES": "true",
