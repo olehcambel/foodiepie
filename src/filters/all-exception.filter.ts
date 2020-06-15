@@ -13,8 +13,6 @@ const log = console;
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost): void {
-    console.log(exception);
-
     const ctx = host.switchToHttp();
     const resp = ctx.getResponse<Response>();
     // const req = ctx.getRequest<Request>();
