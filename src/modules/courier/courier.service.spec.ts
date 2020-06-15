@@ -1,36 +1,38 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { PAGE_OFFSET } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
 import { seed } from '../../seeds/courier.seed';
 import { seed as orderSeed } from '../../seeds/order.seed';
 import { CourierService } from './courier.service';
 import { CreateCandidate, GetCourierOrdersDto } from './dto/courier.dto';
-import { BadRequestException } from '@nestjs/common';
-import { PAGE_OFFSET } from '../../common/constants';
 
 describe('CourierService', () => {
   let service: CourierService;
-  let courierRepo: Repository<Courier>;
-  let orderRepo: Repository<Order>;
 
-  const courierMockRepo = {
+  const courierRepo = {
     save() {
       return seed[0];
     },
     findOne(id: number) {
       return seed[id - 1];
     },
+    update: jest.fn(),
+    findAndCount: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
-  const orderMockRepo = {
+  const orderRepo = {
     save() {
       return orderSeed[0];
     },
     find() {
       return orderSeed;
     },
+    findAndCount: jest.fn(),
+    findOne: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -39,18 +41,16 @@ describe('CourierService', () => {
         CourierService,
         {
           provide: getRepositoryToken(Courier),
-          useValue: courierMockRepo,
+          useValue: courierRepo,
         },
         {
           provide: getRepositoryToken(Order),
-          useValue: orderMockRepo,
+          useValue: orderRepo,
         },
       ],
     }).compile();
 
     service = module.get<CourierService>(CourierService);
-    courierRepo = module.get<Repository<Courier>>(getRepositoryToken(Courier));
-    orderRepo = module.get<Repository<Order>>(getRepositoryToken(Order));
   });
 
   it('should be defined', () => {
@@ -67,7 +67,7 @@ describe('CourierService', () => {
     };
 
     it('with new email', async () => {
-      courierRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      courierRepo.createQueryBuilder.mockReturnValueOnce({
         where: jest.fn().mockReturnThis(),
         getCount: jest.fn().mockReturnValue(0),
       });
@@ -82,9 +82,7 @@ describe('CourierService', () => {
     it('with pagination', async () => {
       const params = { limit: 1, offset: 1 };
       const expectData = { data: seed[0], count: seed.length };
-      courierRepo.findAndCount = jest
-        .fn()
-        .mockReturnValueOnce(Object.values(expectData));
+      courierRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
 
       const result = await service.find(params);
       expect(result).toEqual({ data: seed[0], count: seed.length });
@@ -97,8 +95,9 @@ describe('CourierService', () => {
 
   describe('update', () => {
     it('should succeed', async () => {
+      courierRepo.update.mockReturnValueOnce({ affected: 1 });
+
       const id = 1;
-      courierRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
       const result = await service.update(id, {
         status: 'rejected',
         description: 'testdesc',
@@ -110,14 +109,14 @@ describe('CourierService', () => {
 
   describe('delete', () => {
     it('should succeed', async () => {
-      courierRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      courierRepo.update.mockReturnValueOnce({ affected: 1 });
 
       const result = await service.delete(1);
       expect(result).toEqual(true);
     });
 
     it('should fail on not found', async () => {
-      courierRepo.update = jest.fn().mockReturnValueOnce({ affected: 0 });
+      courierRepo.update.mockReturnValueOnce({ affected: 0 });
 
       await expect(service.delete(1)).rejects.toBeInstanceOf(
         BadRequestException,
@@ -128,7 +127,7 @@ describe('CourierService', () => {
   describe('acceptOrder', () => {
     it('should succeed', async () => {
       const data = orderSeed[3];
-      orderRepo.findOne = jest.fn().mockReturnValueOnce(data);
+      orderRepo.findOne.mockReturnValueOnce(data);
       const result = await service.acceptOrder(1, data.id);
 
       expect(result).toEqual(data);
@@ -136,7 +135,7 @@ describe('CourierService', () => {
 
     it('fail as order is not scheduled', async () => {
       const data = orderSeed[0];
-      orderRepo.findOne = jest.fn().mockReturnValueOnce(data);
+      orderRepo.findOne.mockReturnValueOnce(data);
       await expect(service.acceptOrder(1, data.id)).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -152,9 +151,8 @@ describe('CourierService', () => {
       };
       const courierID = 1;
       const expectData = { data: seed[0], count: seed.length };
-      orderRepo.findAndCount = jest
-        .fn()
-        .mockReturnValueOnce(Object.values(expectData));
+      orderRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
+
       const result = await service.getOrders(courierID, params);
 
       expect(orderRepo.findAndCount).toHaveBeenCalledWith({

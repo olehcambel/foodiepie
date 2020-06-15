@@ -1,35 +1,36 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 import { Product } from '../../entities/product.entity';
 import { Store } from '../../entities/store.entity';
 import { seed as productSeed } from '../../seeds/product.seed';
 import { seed as storeSeed } from '../../seeds/store.seed';
-import { SaveProductsDto, CreateStoreDto, GetStoresDto } from './dto/store.dto';
+import { CreateStoreDto, GetStoresDto, SaveProductsDto } from './dto/store.dto';
 import { StoreService } from './store.service';
 import typeorm = require('typeorm');
-import { PAGE_OFFSET, PAGE_LIMIT } from '../../common/constants';
 
 describe('StoreService', () => {
-  let productRepo: Repository<Product>;
-  let storeRepo: Repository<Store>;
-
-  const storeMockRepo = {
+  const storeRepo = {
     save<T>(data: T): T {
       return data;
     },
     create<T>(data: T): T {
       return data;
     },
+    findOne: jest.fn(),
+    update: jest.fn(),
+    findAndCount: jest.fn(),
   };
 
-  const productMockRepo = {
+  const productRepo = {
     save: jest.fn().mockReturnValue(storeSeed[0]),
     remove: jest.fn().mockReturnValue(undefined),
-    create<T>(data: T): T {
+    create<T extends Product>(data: T): T {
       return data;
     },
+    createQueryBuilder: jest.fn(),
+    find: jest.fn(),
   };
 
   let service: StoreService;
@@ -40,17 +41,15 @@ describe('StoreService', () => {
         StoreService,
         {
           provide: getRepositoryToken(Store),
-          useValue: storeMockRepo,
+          useValue: storeRepo,
         },
         {
           provide: getRepositoryToken(Product),
-          useValue: productMockRepo,
+          useValue: productRepo,
         },
       ],
     }).compile();
     service = module.get<StoreService>(StoreService);
-    productRepo = module.get<Repository<Product>>(getRepositoryToken(Product));
-    storeRepo = module.get<Repository<Store>>(getRepositoryToken(Store));
   });
 
   it('should be defined', () => {
@@ -86,9 +85,7 @@ describe('StoreService', () => {
         contains: ['location'],
       };
       const expectData = { data: storeSeed[0], count: storeSeed.length };
-      storeRepo.findAndCount = jest
-        .fn()
-        .mockReturnValueOnce(Object.values(expectData));
+      storeRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
 
       const result = await service.find(params);
       expect(result).toEqual(expectData);
@@ -105,7 +102,7 @@ describe('StoreService', () => {
   describe('findOne', () => {
     it('should succeed', async () => {
       const id = 1;
-      storeRepo.findOne = jest.fn().mockReturnValueOnce(storeSeed[id - 1]);
+      storeRepo.findOne.mockReturnValueOnce(storeSeed[id - 1]);
       const result = await service.findOne(id);
       expect(result).toEqual(storeSeed[id - 1]);
     });
@@ -132,7 +129,7 @@ describe('StoreService', () => {
 
   describe('getMenus', () => {
     it('should succeed', async () => {
-      productRepo.find = jest.fn().mockReturnValueOnce(productSeed);
+      productRepo.find.mockReturnValueOnce(productSeed);
       const storeID = 1;
       const result = await service.getMenus(storeID);
 
@@ -147,7 +144,7 @@ describe('StoreService', () => {
   describe('saveMenus', () => {
     //
     it('failed as store not found', async () => {
-      storeRepo.findOne = jest.fn().mockReturnValueOnce(undefined);
+      storeRepo.findOne.mockReturnValueOnce(undefined);
       await expect(
         service.saveMenus(1, 1, { data: [] }),
       ).rejects.toBeInstanceOf(ForbiddenException);
@@ -161,10 +158,15 @@ describe('StoreService', () => {
           externalID: productSeed[0].externalID,
           translations: [],
         },
-        productRepo.create(productSeed[1]),
+        {
+          price: '100',
+          imageURL: 'https://testmenow.ai',
+          externalID: productSeed[1].externalID,
+          translations: [],
+        },
       ];
-      storeRepo.findOne = jest.fn().mockReturnValueOnce(storeSeed[0]);
-      productRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      storeRepo.findOne.mockReturnValueOnce(storeSeed[0]);
+      productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         leftJoin: jest.fn().mockReturnThis(),
@@ -188,10 +190,8 @@ describe('StoreService', () => {
 
     it('should remove all as no data', async () => {
       const data: SaveProductsDto['data'] = [];
-      storeRepo.findOne = jest
-        .fn()
-        .mockReturnValueOnce((id: number) => storeSeed[id - 1]);
-      productRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
+      productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         leftJoin: jest.fn().mockReturnThis(),
@@ -206,8 +206,6 @@ describe('StoreService', () => {
             save: jest.fn(),
           }),
       });
-      // productRepo.find = jest.fn().mockReturnValueOnce(productSeed);
-      // productRepo.remove = jest.fn();
       const result = await service.saveMenus(1, 1, { data });
 
       expect(result).toHaveLength(0);
@@ -215,7 +213,7 @@ describe('StoreService', () => {
     });
 
     it('should save new', async () => {
-      productRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         leftJoin: jest.fn().mockReturnThis(),
@@ -231,9 +229,7 @@ describe('StoreService', () => {
           }),
       });
       // productRepo.find = jest.fn().mockReturnValueOnce([]);
-      storeRepo.findOne = jest
-        .fn()
-        .mockReturnValueOnce((id: number) => storeSeed[id - 1]);
+      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
       const data: SaveProductsDto['data'] = [
         {
           price: '10',
@@ -250,12 +246,14 @@ describe('StoreService', () => {
 
     it('should remove old and save new', async () => {
       const expectRemove: SaveProductsDto['data'] = [
-        productRepo.create(productSeed[0]),
+        {
+          externalID: 'ext_1',
+          price: '9.99',
+          translations: [{ title: 'title', language: { id: 1 } }],
+        },
       ];
-      storeRepo.findOne = jest
-        .fn()
-        .mockReturnValueOnce((id: number) => storeSeed[id - 1]);
-      productRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
+      productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         leftJoin: jest.fn().mockReturnThis(),
@@ -270,7 +268,6 @@ describe('StoreService', () => {
             save: jest.fn(),
           }),
       });
-      // productRepo.find = jest.fn().mockReturnValueOnce(expectRemove);
       const data: SaveProductsDto['data'] = [
         {
           price: '10',

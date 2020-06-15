@@ -1,44 +1,78 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
-import { CustomerService } from '../customer/customer.service';
-import { OrderModule } from './order.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Order } from '../../entities/order.entity';
+import { Product } from '../../entities/product.entity';
 import { OrderService } from './order.service';
+import { seed as productSeed } from '../../seeds/product.seed';
+import { OrderCheckoutDto } from './dto/order.dto';
 
 describe('OrderService', () => {
-  // TODO: MV to separate file -> fixtures and implement class interface
-  const customerService = {
-    create: () => {
-      return {
-        id: 1,
-        passwordHash: '6453fd457d2afa55624d55aabf85fe1f',
-        passwordSalt: 'cVTjOpkUOa0ngw==',
-      };
+  const orderRepo = {
+    save<T>(data: T): T {
+      return data;
     },
   };
 
-  let conn: Connection;
+  const productRepo = {
+    findByIds: jest.fn(),
+  };
+
   let service: OrderService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(), OrderModule],
-    })
-      .overrideProvider(CustomerService)
-      .useValue(customerService)
-      .compile();
+      providers: [
+        OrderService,
+        {
+          provide: getRepositoryToken(Order),
+          useValue: orderRepo,
+        },
+        {
+          provide: getRepositoryToken(Product),
+          useValue: productRepo,
+        },
+      ],
+    }).compile();
 
     service = module.get<OrderService>(OrderService);
-    conn = module.get<Connection>(Connection);
-  });
-
-  afterEach(async () => {
-    if (conn) {
-      await conn.close();
-    }
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('checkout', () => {
+    it('should succeed', async () => {
+      productRepo.findByIds.mockReturnValueOnce(productSeed.slice(0, 3));
+      const customerID = 1;
+      const params: OrderCheckoutDto = {
+        products: [{ id: 1, quantity: 10 }],
+        orderAddress: { longitude: 0, latitude: 0, address: 'address' },
+        storeLocation: { id: 1 },
+        scheduledDate: new Date(),
+      };
+      const result = await service.checkout(customerID, params);
+
+      expect(result).toEqual({
+        customer: {
+          id: customerID,
+        },
+        description: undefined,
+        orderAddress: params.orderAddress,
+        orderItems: [
+          {
+            price: '10',
+            product: {
+              id: 1,
+            },
+            quantity: 10,
+          },
+        ],
+        scheduledDate: params.scheduledDate,
+        status: 'scheduled',
+        storeLocation: params.storeLocation,
+        totalPrice: '10',
+      });
+    });
   });
 });

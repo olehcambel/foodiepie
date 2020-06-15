@@ -5,7 +5,12 @@ export class LanguageRefDto {
   id: number;
 }
 
-export class StoreRefDto {
+// export class StoreRefDto {
+//   @IsInt()
+//   id: number;
+// }
+
+export class RefDto {
   @IsInt()
   id: number;
 }
