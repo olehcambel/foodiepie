@@ -6,17 +6,18 @@ import { Product } from '../../entities/product.entity';
 import { Store } from '../../entities/store.entity';
 import { seed as productSeed } from '../../seeds/product.seed';
 import { seed as storeSeed } from '../../seeds/store.seed';
-import { SaveProductsDto } from './dto/store.dto';
+import { SaveProductsDto, CreateStoreDto, GetStoresDto } from './dto/store.dto';
 import { StoreService } from './store.service';
 import typeorm = require('typeorm');
+import { PAGE_OFFSET, PAGE_LIMIT } from '../../common/constants';
 
 describe('StoreService', () => {
   let productRepo: Repository<Product>;
   let storeRepo: Repository<Store>;
 
   const storeMockRepo = {
-    save() {
-      return storeSeed[0];
+    save<T>(data: T): T {
+      return data;
     },
     create<T>(data: T): T {
       return data;
@@ -54,6 +55,92 @@ describe('StoreService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should succeed', async () => {
+      const data: CreateStoreDto = {
+        location: {
+          address: '327 West 42nd Street, New York, NY 10036',
+          postalCode: '10036',
+          latitude: 0,
+          longitude: 0,
+        },
+        slug: 'mmafia',
+        title: 'mmafia',
+      };
+      const userID = 1;
+      const result = await service.create(userID, data);
+
+      expect(result).toHaveProperty('location', data.location);
+      expect(result).toHaveProperty('owner', { id: userID });
+      expect(result).toHaveProperty('slug', data.slug);
+      expect(result).toHaveProperty('title', data.title);
+    });
+  });
+
+  describe('find', () => {
+    it('with pagination', async () => {
+      const params: GetStoresDto = {
+        fields: ['id', 'slug', 'status'],
+        contains: ['location'],
+      };
+      const expectData = { data: storeSeed[0], count: storeSeed.length };
+      storeRepo.findAndCount = jest
+        .fn()
+        .mockReturnValueOnce(Object.values(expectData));
+
+      const result = await service.find(params);
+      expect(result).toEqual(expectData);
+      expect(storeRepo.findAndCount).toHaveBeenCalledWith({
+        take: PAGE_LIMIT,
+        skip: PAGE_OFFSET,
+        select: params.fields,
+        relations: params.contains,
+        where: { status: 'active' },
+      });
+    });
+  });
+
+  describe('findOne', () => {
+    it('should succeed', async () => {
+      const id = 1;
+      storeRepo.findOne = jest.fn().mockReturnValueOnce(storeSeed[id - 1]);
+      const result = await service.findOne(id);
+      expect(result).toEqual(storeSeed[id - 1]);
+    });
+  });
+
+  describe('update', () => {
+    it('should succeed', async () => {
+      // service.findOne = jest.fn().mockReturnValueOnce()
+      const storeID = 1;
+      service.findOne = jest.fn().mockReturnValueOnce(storeSeed[storeID - 1]);
+      storeRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      const result = await service.update(1, storeID, { description: 'desc' });
+      expect(result).toEqual(storeSeed[storeID - 1]);
+    });
+  });
+
+  describe('delete', () => {
+    it('should succeed', async () => {
+      storeRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      const result = await service.delete(1, 1);
+      expect(result).toEqual(true);
+    });
+  });
+
+  describe('getMenus', () => {
+    it('should succeed', async () => {
+      productRepo.find = jest.fn().mockReturnValueOnce(productSeed);
+      const storeID = 1;
+      const result = await service.getMenus(storeID);
+
+      expect(result).toEqual(productSeed);
+      expect(productRepo.find).toHaveBeenCalledWith({
+        where: { store: { id: storeID }, status: 'active' },
+      });
+    });
   });
 
   // TODO: should be refactored

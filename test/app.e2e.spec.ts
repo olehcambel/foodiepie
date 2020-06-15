@@ -6,27 +6,46 @@ import { Connection } from 'typeorm';
 import { AppModule } from '../src/app.module';
 import { AllExceptionFilter } from '../src/filters/all-exception.filter';
 import { RolesGuard } from '../src/guards/roles.guard';
+import { UpdateCustomerDto } from '../src/modules/customer/dto/customer.dto';
+import {
+  CreateStoreDto,
+  SaveProductsDto,
+  UpdateStoreDto,
+  UpdateStoreFullDto,
+} from '../src/modules/store/dto/store.dto';
+import LanguageSeed from '../src/seeds/language.seed';
+import ManagerSeed from '../src/seeds/manager.seed';
+import { OrderCheckoutDto } from '../src/modules/order/dto/order.dto';
 
-const fakeData = {
-  name: 'name_1',
-  description: 'description_1',
-  email: 'customer_1@gmail.com',
-  password: 'password',
-};
-
-const fixtures = {
-  signup1: {
-    email: fakeData.email,
-    password: fakeData.password,
-    name: fakeData.name,
+const fake = {
+  managerLogin: {
+    userType: 'manager',
+    email: 'manager@gmail.com',
+    password: 'password',
   },
-  login1: {
-    email: fakeData.email,
-    password: fakeData.password,
+  customer: {
+    signup: {
+      name: 'string',
+      email: 'customer@gmail.com',
+      password: 'password',
+    },
+    login: {
+      userType: 'customer',
+      email: 'customer@gmail.com',
+      password: 'password',
+    },
   },
-  upd1: {
-    name: fakeData.name,
-    description: fakeData.description,
+  customerOwner: {
+    signup: {
+      name: 'string',
+      email: 'customer_owner@gmail.com',
+      password: 'password',
+    },
+    login: {
+      userType: 'customer',
+      email: 'customer_owner@gmail.com',
+      password: 'password',
+    },
   },
 };
 
@@ -34,7 +53,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
   let conn: Connection;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -54,86 +73,335 @@ describe('AppController (e2e)', () => {
       }),
     );
     await app.init();
+
+    await conn.dropDatabase();
+    await conn.synchronize();
+    await new ManagerSeed().up();
+    await new LanguageSeed().up();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     if (conn) {
+      await conn.dropDatabase();
       await conn.close();
     }
   });
 
   // https://github.com/gothinkster/realworld/blob/master/api/Conduit.postman_collection.json
   describe('Auth (Customer)', () => {
-    let accessToken: string;
+    const manager = {
+      token: '',
+    };
+
+    const customer = {
+      id: 0,
+      token: '',
+    };
+
+    const customerOwner = {
+      // id: 0,
+      token: '',
+    };
+
+    const products: [number, number] = [0, 0];
+    const languageID = 1;
+    let storeID = 0;
 
     it('/auth/signup (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
-        .send(fixtures.signup1)
+        .send(fake.customer.signup)
         .expect(201)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
+        });
+    });
 
-          // accessToken = res.body
+    it('/auth/signup (POST)', () => {
+      return request(app.getHttpServer())
+        .post('/auth/signup')
+        .send(fake.customerOwner.signup)
+        .expect(201)
+        .expect((res) => {
+          expect(res).toBeDefined();
+          expect(res.body).toHaveProperty('accessToken');
         });
     });
 
     it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
-        .send(fixtures.login1)
+        .send(fake.managerLogin)
         .expect(201)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
+
+          manager.token = res.body.accessToken;
         });
     });
 
-    it('/auth/login (POST) remember token', () => {
+    it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
-        .send(fixtures.login1)
+        .send(fake.customer.login)
         .expect(201)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
 
-          accessToken = res.body.accessToken;
+          customer.token = res.body.accessToken;
+        });
+    });
+
+    it('/auth/login (POST)', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send(fake.customerOwner.login)
+        .expect(201)
+        .expect((res) => {
+          expect(res).toBeDefined();
+          expect(res.body).toHaveProperty('accessToken');
+
+          customerOwner.token = res.body.accessToken;
         });
     });
 
     it('/customers/me (GET)', () => {
       return request(app.getHttpServer())
         .get('/customers/me')
-        .set('Authorization', `Token ${accessToken}`)
+        .set('Authorization', `Token ${customer.token}`)
         .expect(200)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('email', fixtures.signup1.email);
-          expect(res.body).toHaveProperty('description', fakeData.description);
-          expect(res.body).toHaveProperty('name', fixtures.signup1.name);
-          expect(res.body).toHaveProperty('status', 'active');
-          expect(res.body).toHaveProperty('language', null);
+          expect(res.body).toHaveProperty('email');
+
+          customer.id = res.body.id;
+        });
+    });
+
+    it('/managers/customers/:customerId (PUT)', () => {
+      return request(app.getHttpServer())
+        .put(`/managers/customers/${customer.id}`)
+        .send({ status: 'active' })
+        .set('Authorization', `Token ${manager.token}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res).toBeDefined();
+          expect(res.body).toHaveProperty('id');
+          expect(res.body).toHaveProperty('email');
         });
     });
 
     it('/customers/me (PUT)', () => {
       return request(app.getHttpServer())
         .put('/customers/me')
-        .set('Authorization', `Token ${accessToken}`)
-        .send(fixtures.upd1)
+        .send({ description: 'new' } as UpdateCustomerDto)
+        .set('Authorization', `Token ${customer.token}`)
         .expect(200)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('email', fakeData.email);
-          expect(res.body).toHaveProperty('description', fakeData.description);
-          expect(res.body).toHaveProperty('name', fakeData.name);
-          expect(res.body).toHaveProperty('status', 'active');
-          expect(res.body).toHaveProperty('language', null);
+          expect(res.body).toHaveProperty('email');
         });
+    });
+
+    describe('store', () => {
+      it('/stores (POST)', () => {
+        return request(app.getHttpServer())
+          .post('/stores')
+          .send({
+            title: 'Title',
+            slug: 'title',
+            location: {
+              address: 'address',
+              postalCode: '11111',
+              longitude: 0,
+              latitude: 0,
+            },
+          } as CreateStoreDto)
+          .set('Authorization', `Token ${customerOwner.token}`)
+          .expect(201)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('owner');
+
+            storeID = res.body.id;
+          });
+      });
+
+      it('/managers/stores/:storeId (PUT)', () => {
+        return request(app.getHttpServer())
+          .put(`/managers/stores/${storeID}`)
+          .send({ status: 'active' } as UpdateStoreFullDto)
+          .set('Authorization', `Token ${manager.token}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('status', 'active');
+          });
+      });
+
+      it('/stores/:storeId (PUT)', () => {
+        return request(app.getHttpServer())
+          .put(`/stores/${storeID}`)
+          .send({ description: 'new_description' } as UpdateStoreDto)
+          .set('Authorization', `Token ${customerOwner.token}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('description', 'new_description');
+          });
+      });
+
+      it('/stores (GET)', () => {
+        return request(app.getHttpServer())
+          .get('/stores')
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('count', expect.any(Number));
+            expect(res.body).toHaveProperty('data');
+            expect(Array.isArray(res.body.data)).toEqual(true);
+            expect(res.body.data).toHaveLength(1);
+            expect(res.body.data[0]).toHaveProperty('id');
+            expect(res.body.data[0]).toHaveProperty('status', 'active');
+          });
+      });
+
+      it('/stores/:storeId (GET)', () => {
+        return request(app.getHttpServer())
+          .get(`/stores/${storeID}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('status', 'active');
+          });
+      });
+
+      it('/stores/:storeId/menus (PUT)', () => {
+        return request(app.getHttpServer())
+          .put(`/stores/${storeID}/menus`)
+          .set('Authorization', `Token ${customerOwner.token}`)
+          .send({
+            data: [
+              {
+                price: '150',
+                externalID: 'ext.1',
+                translations: [
+                  { title: 'title.1', language: { id: languageID } },
+                ],
+              },
+              {
+                price: '9.99',
+                externalID: 'ext.2',
+                translations: [
+                  { title: 'title.2', language: { id: languageID } },
+                ],
+              },
+            ],
+          } as SaveProductsDto)
+
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(Array.isArray(res.body)).toEqual(true);
+            expect(res.body).toHaveLength(2);
+
+            expect(res.body[0]).toHaveProperty('id');
+            expect(res.body[0]).toHaveProperty('externalID');
+            expect(res.body[0]).toHaveProperty('price', expect.any(String));
+
+            products[0] = res.body[0].id;
+            products[1] = res.body[1].id;
+          });
+      });
+
+      it('/stores/:storeId/menus (GET)', () => {
+        return request(app.getHttpServer())
+          .get(`/stores/${storeID}/menus`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(Array.isArray(res.body)).toEqual(true);
+            if (res.body.length) {
+              expect(res.body[0]).toHaveProperty('id');
+              expect(res.body[0]).toHaveProperty('externalID');
+              expect(res.body[0]).toHaveProperty('price', expect.any(String));
+            }
+          });
+      });
+    });
+
+    describe('customer order', () => {
+      let orderID = 0;
+
+      it('/customers/orders/checkout (POST)', () => {
+        return request(app.getHttpServer())
+          .post('/customers/orders/checkout')
+          .set('Authorization', `Token ${customer.token}`)
+          .send({
+            orderAddress: { address: 'address', latitude: 0, longitude: 0 },
+            products: [
+              { quantity: 10, id: products[0] },
+              { quantity: 1, id: products[1] },
+            ],
+          } as OrderCheckoutDto)
+          .expect(201)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('status');
+            expect(res.body).toHaveProperty('orderItems');
+            expect(res.body).toHaveProperty('customer');
+            expect(res.body).toHaveProperty('orderAddress');
+            expect(res.body).toHaveProperty('finishedAt', null);
+            expect(res.body).toHaveProperty('scheduledDate');
+            expect(res.body).toHaveProperty('totalPrice', expect.any(String));
+            expect(res.body).toHaveProperty(
+              'deliveryPrice',
+              expect.any(String),
+            );
+            expect(res.body).toHaveProperty('scheduledDate');
+
+            orderID = res.body.id;
+          });
+      });
+
+      it('/customers/orders (GET)', () => {
+        return request(app.getHttpServer())
+          .get('/customers/orders')
+          .set('Authorization', `Token ${customer.token}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            expect(Array.isArray(res.body)).toEqual(true);
+            if (res.body.length) {
+              expect(res.body[0]).toHaveProperty('id');
+              expect(res.body[0]).toHaveProperty('status');
+              expect(res.body[0]).toHaveProperty('isPaid');
+              expect(res.body[0]).toHaveProperty('totalPrice');
+            }
+          });
+      });
+
+      it('/customers/orders/:orderId/cancel (PUT)', () => {
+        return request(app.getHttpServer())
+          .put(`/customers/orders/${orderID}/cancel`)
+          .set('Authorization', `Token ${customer.token}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res).toBeDefined();
+            // FIXME: should true. for some reason it converts to {}
+            expect(res.body).toEqual({});
+          });
+      });
     });
   });
 });

@@ -20,7 +20,10 @@ import { LanguageRefDto } from '../../../common/ref-entity.dto';
 import { ProductTranslation } from '../../../entities/product-translation.entity';
 import { Product } from '../../../entities/product.entity';
 import { StoreLocation } from '../../../entities/store-location.entity';
-import { Store } from '../../../entities/store.entity';
+import {
+  Store,
+  statusArray as storeStatus,
+} from '../../../entities/store.entity';
 
 class StoreLocationDto implements DeepPartial<StoreLocation> {
   @IsLatitude()
@@ -92,6 +95,24 @@ export class GetStoresDto {
 }
 
 export class UpdateStoreDto implements DeepPartial<Store> {
+  @Length(1, 4096)
+  @IsOptional()
+  description?: string;
+}
+
+export class UpdateStoreFullDto implements DeepPartial<Store> {
+  @Length(1, 50)
+  @IsOptional()
+  title?: string;
+
+  @Length(1, 50)
+  @IsOptional()
+  slug?: string;
+
+  @IsIn(storeStatus)
+  @IsOptional()
+  status?: AppEntity.StoreStatus;
+
   @Length(1, 4096)
   @IsOptional()
   description?: string;

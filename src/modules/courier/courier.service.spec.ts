@@ -112,11 +112,11 @@ describe('CourierService', () => {
     it('should succeed', async () => {
       courierRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
 
-      const result = service.delete(1);
-      expect(result).toBeTruthy();
+      const result = await service.delete(1);
+      expect(result).toEqual(true);
     });
 
-    it('should fail on not яfound', async () => {
+    it('should fail on not found', async () => {
       courierRepo.update = jest.fn().mockReturnValueOnce({ affected: 0 });
 
       await expect(service.delete(1)).rejects.toBeInstanceOf(

@@ -1,6 +1,7 @@
 import { IsIn, IsOptional, Length } from 'class-validator';
 import { DeepPartial } from 'typeorm';
 import { statusArray as customerStatus } from '../../../entities/customer.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
   @Length(1, 50)
@@ -17,6 +18,7 @@ export class UpdateCustomerDto implements DeepPartial<AppEntity.Customer> {
 }
 
 export class UpdateCustomerFullDto implements DeepPartial<AppEntity.Customer> {
+  @ApiProperty({ enum: customerStatus })
   @IsIn(customerStatus)
   @IsOptional()
   status?: AppEntity.CustomerStatus;

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -10,6 +11,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiUserType } from '../../decorators/user-type.decorator';
 import { Courier } from '../../entities/courier.entity';
+import { Customer } from '../../entities/customer.entity';
+import { Store } from '../../entities/store.entity';
 import { CourierService } from '../courier/courier.service';
 import { CouriersResDto } from '../courier/dto/courier-res.dto';
 import {
@@ -18,7 +21,8 @@ import {
 } from '../courier/dto/courier.dto';
 import { CustomerService } from '../customer/customer.service';
 import { UpdateCustomerFullDto } from '../customer/dto/customer.dto';
-import { Customer } from '../../entities/customer.entity';
+import { UpdateStoreFullDto } from '../store/dto/store.dto';
+import { StoreService } from '../store/store.service';
 
 @Controller('managers')
 @ApiTags('Manager')
@@ -27,6 +31,7 @@ export class ManagerController {
   constructor(
     private readonly courierService: CourierService,
     private readonly customerService: CustomerService,
+    private readonly storeService: StoreService,
   ) {}
 
   @Get('couriers')
@@ -41,19 +46,28 @@ export class ManagerController {
     return this.courierService.findOne(courierID);
   }
 
+  @Put('stores/:storeId')
+  @ApiUserType('manager')
+  updateStore(
+    @Param('storeId', ParseIntPipe) storeID: number,
+    @Body() params: UpdateStoreFullDto,
+  ): Promise<Store> {
+    return this.storeService.updateFull(storeID, params);
+  }
+
   @Put('couriers/:courierId')
   @ApiUserType('manager')
   updateCourier(
-    @Query('courierId', ParseIntPipe) courierID: number,
+    @Param('courierId', ParseIntPipe) courierID: number,
     @Body() params: UpdateCourierFullDto,
   ): Promise<Courier> {
     return this.courierService.update(courierID, params);
   }
 
-  @Put('couriers/:courierId')
+  @Delete('couriers/:courierId')
   @ApiUserType('manager')
   deleteCourier(
-    @Query('courierId', ParseIntPipe) courierID: number,
+    @Param('courierId', ParseIntPipe) courierID: number,
   ): Promise<boolean> {
     return this.courierService.delete(courierID);
   }
@@ -61,7 +75,7 @@ export class ManagerController {
   @Put('customers/:customerId')
   @ApiUserType('manager')
   updateCustomer(
-    @Query('courierId', ParseIntPipe) customerID: number,
+    @Param('customerId', ParseIntPipe) customerID: number,
     @Body() params: UpdateCustomerFullDto,
   ): Promise<Customer> {
     return this.customerService.update(customerID, params);

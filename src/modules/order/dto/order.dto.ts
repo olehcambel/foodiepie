@@ -43,11 +43,12 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   @IsOptional()
   description?: string;
 
-  @IsDateString()
   @ApiPropertyOptional({
     description:
       "If you want the order to be scheduled. Otherwise, it'll be scheduled for immediate delivery.",
   })
+  @IsDateString()
+  @IsOptional()
   scheduledDate?: Date;
 
   @Type(() => OrderAddressDto)

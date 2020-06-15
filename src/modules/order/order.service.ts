@@ -65,6 +65,10 @@ export class OrderService {
       select: ['id', 'status'],
       where: { id: orderID, customer: { id: customerID } },
     });
+    if (!o) {
+      throw new BadRequestException('failed to find order');
+    }
+
     if (o.status === 'scheduled') {
       o.status = 'cancelled';
       o.finishedAt = new Date();
@@ -73,7 +77,7 @@ export class OrderService {
       return true;
     }
 
-    throw new BadRequestException('Status must be "scheduled" to cancel');
+    throw new BadRequestException('status must be "scheduled" to cancel');
   }
 
   getOrders(userID: number, params: GetCustomerOrders): Promise<Order[]> {

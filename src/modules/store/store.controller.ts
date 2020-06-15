@@ -36,19 +36,19 @@ export class StoreController {
     @Req() req: JWTReq.User,
     @Body() params: CreateStoreDto,
   ): Promise<Store> {
-    return this.service.createStore(req.user.id, params);
+    return this.service.create(req.user.id, params);
   }
 
   @Get()
   @Public()
   getStores(@Query() params: GetStoresDto): Promise<StoresResDto> {
-    return this.service.getStores(params);
+    return this.service.find(params);
   }
 
   @Get(':storeId')
   @Public()
   getStore(@Param('storeId', ParseIntPipe) storeID: number): Promise<Store> {
-    return this.service.getStore(storeID);
+    return this.service.findOne(storeID);
   }
 
   @Put(':storeId')
@@ -58,7 +58,7 @@ export class StoreController {
     @Param('storeId', ParseIntPipe) storeID: number,
     @Body() params: UpdateStoreDto,
   ): Promise<Store> {
-    return this.service.updateStore(req.user.id, storeID, params);
+    return this.service.update(req.user.id, storeID, params);
   }
 
   @Delete(':storeId')
@@ -67,7 +67,7 @@ export class StoreController {
     @Req() req: JWTReq.User,
     @Param('storeId', ParseIntPipe) storeID: number,
   ): Promise<boolean> {
-    return this.service.deleteStore(req.user.id, storeID);
+    return this.service.delete(req.user.id, storeID);
   }
 
   @Get(':storeId/menus')

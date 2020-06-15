@@ -7,6 +7,7 @@ import {
   Put,
   Query,
   Req,
+  Param,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../decorators/access.decorator';
@@ -47,7 +48,7 @@ export class CourierController {
   @ApiOperation({ summary: 'Accept an order. Available if courierId is null' })
   @ApiUserType('courier')
   acceptOrder(
-    @Query('orderId', ParseIntPipe) orderID: number,
+    @Param('orderId', ParseIntPipe) orderID: number,
     @Req() req: JWTReq.User,
   ): Promise<Order> {
     return this.service.acceptOrder(req.user.id, orderID);

@@ -31,7 +31,7 @@ const options = {
   migrations: [`${dir}/migrations/*.{ts,js}`],
   entities: [`${dir}/entities/*.entity.{ts,js}`],
   subscribers: [`${dir}/subscribers/*.{ts,js}`],
-  logging: ['true', '1'].includes(MYSQL_LOG),
+  logging: IS_TEST ? false : ['true', '1'].includes(MYSQL_LOG),
   cli: {
     entitiesDir: './src/entities',
     migrationsDir: './src/migrations',

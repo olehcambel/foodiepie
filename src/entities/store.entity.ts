@@ -7,9 +7,9 @@ import {
 } from 'typeorm';
 import { Customer } from './customer.entity';
 import { StoreLocation } from './store-location.entity';
-import { ApiHideProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-const statusArray: AppEntity.StoreStatus[] = [
+export const statusArray: AppEntity.StoreStatus[] = [
   'pending',
   'active',
   'blocked',
@@ -32,6 +32,7 @@ export class Store implements AppEntity.Store {
   description?: string;
 
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
+  @ApiProperty({ enum: statusArray })
   status: AppEntity.StoreStatus;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

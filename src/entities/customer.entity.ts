@@ -1,4 +1,4 @@
-import { ApiHideProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Language } from './language.entity';
 
@@ -14,6 +14,10 @@ export const statusArray: AppEntity.CustomerStatus[] = [
 export class Customer implements AppEntity.Customer {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
+  @ApiProperty({ enum: statusArray })
+  status: AppEntity.CustomerStatus;
 
   @Column({ length: 50 })
   name: string;
@@ -34,9 +38,6 @@ export class Customer implements AppEntity.Customer {
 
   @Column({ length: 255, nullable: true })
   description?: string;
-
-  @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
-  status: AppEntity.CustomerStatus;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt: Date;

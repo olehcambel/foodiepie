@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Language } from './language.entity';
-import { ApiHideProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 export const statusArray: AppEntity.CourierStatus[] = [
   'pending',
@@ -16,6 +16,7 @@ export class Courier implements AppEntity.Courier {
   id: number;
 
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
+  @ApiProperty({ enum: statusArray })
   status: AppEntity.CourierStatus;
 
   // TODO: phoneNumber (10) + phoneCode (3)

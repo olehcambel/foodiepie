@@ -11,6 +11,7 @@ import {
   GetStoresDto,
   SaveProductsDto,
   UpdateStoreDto,
+  UpdateStoreFullDto,
 } from './dto/store.dto';
 import { ProductTranslation } from '../../entities/product-translation.entity';
 
@@ -21,17 +22,18 @@ export class StoreService {
     private readonly storeRepo: Repository<Store>,
 
     @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>, // @InjectRepository(ProductTranslation) // private readonly productTranslationRepo: Repository<ProductTranslation>,
+    private readonly productRepo: Repository<Product>,
   ) {}
 
-  createStore(userID: number, params: CreateStoreDto): Promise<Store> {
+  create(userID: number, params: CreateStoreDto): Promise<Store> {
+    // TODO: should be pending as default!
     return this.storeRepo.save({
       owner: { id: userID },
       ...params,
     });
   }
 
-  async getStores(params: GetStoresDto): Promise<StoresResDto> {
+  async find(params: GetStoresDto): Promise<StoresResDto> {
     const [data, count] = await this.storeRepo.findAndCount({
       select: params.fields,
       relations: params.contains,
@@ -43,7 +45,7 @@ export class StoreService {
     return { data, count };
   }
 
-  getStore(storeID: number): Promise<Store> {
+  findOne(storeID: number): Promise<Store> {
     return this.storeRepo.findOne(storeID);
   }
 
@@ -53,7 +55,7 @@ export class StoreService {
     }
   }
 
-  async updateStore(
+  async update(
     userID: number,
     storeID: number,
     params: UpdateStoreDto,
@@ -63,10 +65,20 @@ export class StoreService {
       params,
     );
     this.isAffected(res.affected);
-    return this.getStore(storeID);
+    return this.findOne(storeID);
   }
 
-  async deleteStore(userID: number, storeID: number): Promise<boolean> {
+  // TODO: better to merge with update() and make userID optional
+  async updateFull(
+    storeID: number,
+    params: UpdateStoreFullDto,
+  ): Promise<Store> {
+    const res = await this.storeRepo.update({ id: storeID }, params);
+    this.isAffected(res.affected);
+    return this.findOne(storeID);
+  }
+
+  async delete(userID: number, storeID: number): Promise<boolean> {
     const res = await this.storeRepo.update(
       { id: storeID, owner: { id: userID } },
       { status: 'deleted' },
@@ -94,7 +106,7 @@ export class StoreService {
   ): Promise<Product[]> {
     const store = await this.storeRepo.findOne(storeID, {
       select: ['id'],
-      where: { /* id: storeID, */ owner: { id: userID } },
+      where: { owner: { id: userID } },
     });
     if (!store) {
       throw new ForbiddenException();
@@ -108,17 +120,16 @@ export class StoreService {
       .where('p.store = :storeID', { storeID })
       .getMany();
     const newMenu: Product[] = [];
-    const oldTP: ProductTranslation[] = [];
+    const oldPT: ProductTranslation[] = [];
 
     const delta = getDelta(
       curMenu,
       this.productRepo.create(params.data),
       'externalID',
-      // (a, b) => a.externalID === b.externalID,
       (o, n) => {
         if (n.externalID === o.externalID) {
           n.id = o.id;
-          oldTP.push(...o.translations);
+          oldPT.push(...o.translations);
 
           // means that data is not equal and should be updated
           return false;
@@ -133,11 +144,10 @@ export class StoreService {
     }
 
     await getManager().transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.remove(oldTP);
+      await transactionalEntityManager.remove(oldPT);
       await transactionalEntityManager.remove(delta.deleted);
       await transactionalEntityManager.save(newMenu);
     });
-
     // if (delta.deleted.length) { }
 
     return newMenu;

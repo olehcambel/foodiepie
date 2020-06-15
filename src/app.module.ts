@@ -7,6 +7,7 @@ import { OrderModule } from './modules/order/order.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { StoreModule } from './modules/store/store.module';
 import { ManagerModule } from './modules/manager/manager.module';
+import { PrefixlessModule } from './modules/app/prefixless.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ManagerModule } from './modules/manager/manager.module';
     StoreModule,
     CourierModule,
     ManagerModule,
+    PrefixlessModule,
   ],
   controllers: [],
   providers: [],
