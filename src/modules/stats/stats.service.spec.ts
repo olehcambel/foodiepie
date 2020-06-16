@@ -63,6 +63,12 @@ describe('StatsService', () => {
       expect(result).toHaveProperty('orderPayout', expect.any(String));
       expect(result).toHaveProperty('averageTime', expect.any(String));
     });
+
+    it('with no fields', async () => {
+      const result = await service['getCourierPerf'](1, []);
+
+      expect(result).toBeUndefined();
+    });
   });
 
   describe('getCommonAddress', () => {

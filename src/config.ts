@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { getEnv, getEnvNumber, getEnvBool } from './lib/dotenv-get';
 
-const IS_TEST = getEnvBool('NODE_ENV', false);
+const IS_TEST = process.env.NODE_ENV === 'test';
 
 config({ path: IS_TEST ? './.env.test' : './.env' });
 

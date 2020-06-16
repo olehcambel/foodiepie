@@ -1,5 +1,5 @@
 // TODO: mv to jest prestart config
-require('../../config');
+// require('../../config');
 import { UnauthorizedException } from '@nestjs/common';
 import { getToken, jwtVerify } from './jwt';
 

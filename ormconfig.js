@@ -2,9 +2,15 @@
 
 'use strict';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { config } = require('dotenv');
+
 const IS_TEST = process.env.NODE_ENV === 'test';
+
 if (IS_TEST) process.env.TS = 'true';
 const dir = process.env.TS ? 'src' : 'dist';
+// FIXME: temp solution. if test -> use
+config({ path: IS_TEST ? `./${dir}/../.env.test` : `./${dir}/../.env` });
 
 const {
   MYSQL_PORT,
@@ -21,7 +27,8 @@ const options = {
   host: MYSQL_HOST,
   username: MYSQL_USERNAME,
   password: MYSQL_PASSWORD,
-  database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
+  database: MYSQL_DATABASE,
+  // database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
   type: 'mysql',
   bigNumberStrings: true,
 
