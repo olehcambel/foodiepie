@@ -10,6 +10,12 @@ export const statusArray: AppEntity.CustomerStatus[] = [
   'deleted',
 ];
 
+// export enum CustomerStatus {
+//   Active = 'active',
+//   Blocked = 'blocked',
+//   Deleted = 'deleted',
+// }
+
 @Entity('customers')
 export class Customer implements AppEntity.Customer {
   @PrimaryGeneratedColumn()

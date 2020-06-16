@@ -11,14 +11,10 @@ import { PORT } from './config';
 import { AllExceptionFilter } from './filters/all-exception.filter';
 import { RolesGuard } from './guards/roles.guard';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
-import { createConnection } from 'typeorm';
-import { Product } from './entities/product.entity';
+
+const log = console;
 
 async function bootstrap(): Promise<void> {
-  const con = await createConnection();
-  const d = await con.getRepository(Product).findByIds([2, 1]);
-  console.log(d);
-
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('v1');
@@ -41,9 +37,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalGuards(new RolesGuard(reflector));
   swagger.add(app);
 
-  await app.listen(
-    PORT,
-    async () => `Application is running on: ${await app.getUrl()}`,
-  );
+  await app.listen(PORT);
+  log.info(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

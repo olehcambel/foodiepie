@@ -1,40 +1,87 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Connection, Repository } from 'typeorm';
-import { Customer } from '../../entities/customer.entity';
-import { StatsModule } from './stats.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { OrderAddress } from '../../entities/order-address.entity';
+import { Order } from '../../entities/order.entity';
 import { StatsService } from './stats.service';
+import { GetStatCourierResDto } from './dto/stats-res.dto';
 
 describe('StatsService', () => {
   let service: StatsService;
-  // let customerRepo: Repository<Customer>;
-  let conn: Connection;
+
+  const orderRepo = {
+    createQueryBuilder: jest.fn(),
+  };
+
+  const orderAddressRepo = {
+    createQueryBuilder: jest.fn(),
+  };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(), StatsModule],
       providers: [
+        StatsService,
         {
-          provide: getRepositoryToken(Customer),
-          useClass: Repository,
+          provide: getRepositoryToken(Order),
+          useValue: orderRepo,
+        },
+        {
+          provide: getRepositoryToken(OrderAddress),
+          useValue: orderAddressRepo,
         },
       ],
     }).compile();
 
     service = module.get<StatsService>(StatsService);
-    // customerRepo = module.get<Repository<Customer>>(
-    // getRepositoryToken(Customer),
-    // );
-    conn = module.get<Connection>(Connection);
-  });
-
-  afterAll(async () => {
-    if (conn) {
-      await conn.close();
-    }
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getCourierPerf', () => {
+    it('should succeed', async () => {
+      orderRepo.createQueryBuilder.mockReturnValueOnce({
+        innerJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockReturnValueOnce({
+          averageTime: '00:40',
+          orderCount: '10',
+          orderPayout: '100',
+        } as GetStatCourierResDto),
+      });
+
+      const result = await service['getCourierPerf'](1, [
+        'orderCount',
+        'orderPayout',
+        'averageTime',
+      ]);
+
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('orderCount', expect.any(String));
+      expect(result).toHaveProperty('orderPayout', expect.any(String));
+      expect(result).toHaveProperty('averageTime', expect.any(String));
+    });
+  });
+
+  describe('getCommonAddress', () => {
+    it('should succeed', async () => {
+      orderAddressRepo.createQueryBuilder.mockReturnValueOnce({
+        innerJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockReturnValueOnce({
+          commonAddress: 'test',
+        } as GetStatCourierResDto),
+      });
+      const result = await service['getCommonAddress'](1, ['commonAddress']);
+
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('commonAddress', expect.any(String));
+    });
   });
 });

@@ -13,7 +13,7 @@ export class AuthService {
     private readonly customerService: CustomerService,
   ) {}
 
-  async validateUser(params: LoginDto): Promise<AppEntity.User> {
+  private async validateUser(params: LoginDto): Promise<AppEntity.User> {
     const user = await this.userService.findByEmail(params);
     if (
       !user ||

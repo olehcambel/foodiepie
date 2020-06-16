@@ -48,7 +48,7 @@ export class OrderController {
     @Query() params: GetCustomerOrders,
     @Req() req: JWTReq.User,
   ): Promise<Order[]> {
-    return this.service.getOrders(req.user.id, params);
+    return this.service.find(req.user.id, params);
   }
 
   @Get('receipt/estimation')
@@ -68,6 +68,6 @@ export class OrderController {
     @Req() req: JWTReq.User,
     @Param('orderId', ParseIntPipe) orderID: number,
   ): Promise<boolean> {
-    return this.service.cancelOrder(req.user.id, orderID);
+    return this.service.cancel(req.user.id, orderID);
   }
 }

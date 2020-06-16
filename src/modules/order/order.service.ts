@@ -18,6 +18,17 @@ export class OrderService {
     private readonly productRepo: Repository<Product>,
   ) {}
 
+  /**
+   * Math.max(100, totalPrice)
+   * if getTotal() < 100 { additional tax }
+   * Order
+   * - lineItems
+   * - shipping
+   * + getTotal()
+   * + getShippingCost()
+   * + getShippingDate()
+   */
+
   // FIXME: O(3N)
   async checkout(customerID: number, params: OrderCheckoutDto): Promise<Order> {
     let totalPrice = 0;
@@ -42,12 +53,13 @@ export class OrderService {
 
     const order = await this.orderRepo.save({
       description: params.description,
-      /** FIXME:
+      /**
        * If you want the order to be scheduled, provide a scheduleTime.
        * Otherwise, it'll be scheduled for immediate delivery.
-       * However, it should not be RIGHT NOW, maybe 25 later???
+       * FIXME: However, it should not be RIGHT NOW, maybe 25 later???
        */
-      scheduledDate: params.scheduledDate || moment().add(25, 'minutes'),
+      scheduledDate:
+        params.scheduledDate || moment().add(25, 'minutes').toDate(),
       status: 'scheduled',
       totalPrice: String(totalPrice),
       // TODO: how to calculate delivery price (location)?
@@ -65,14 +77,11 @@ export class OrderService {
     return order;
   }
 
-  async cancelOrder(customerID: number, orderID: number): Promise<boolean> {
-    const o = await this.orderRepo.findOne({
+  async cancel(customerID: number, orderID: number): Promise<boolean> {
+    const o = await this.orderRepo.findOneOrFail({
       select: ['id', 'status'],
       where: { id: orderID, customer: { id: customerID } },
     });
-    if (!o) {
-      throw new BadRequestException('not found');
-    }
 
     if (o.status === 'scheduled') {
       o.status = 'cancelled';
@@ -85,7 +94,7 @@ export class OrderService {
     throw new BadRequestException('status must be "scheduled" to cancel');
   }
 
-  getOrders(userID: number, params: GetCustomerOrders): Promise<Order[]> {
+  find(userID: number, params: GetCustomerOrders = {}): Promise<Order[]> {
     return this.orderRepo.find({
       take: params.limit || PAGE_LIMIT,
       skip: params.offset || PAGE_OFFSET,

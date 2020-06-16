@@ -1,12 +1,13 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Response } from 'express';
-// import { EntityNotFound } from "typeorm";
+import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 
 const log = console;
 
@@ -43,6 +44,9 @@ export class AllExceptionFilter implements ExceptionFilter {
       !(err instanceof InternalServerErrorException)
     ) {
       return err;
+    } else if (err instanceof EntityNotFoundError) {
+      // handle typeorm errors
+      return new BadRequestException('data not found');
     }
 
     // if (err instanceof EntityNotFound)

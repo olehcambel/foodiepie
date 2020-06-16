@@ -353,7 +353,7 @@ describe('AppController (e2e)', () => {
             expect(res.body).toHaveProperty('customer');
             expect(res.body).toHaveProperty('orderAddress');
             expect(res.body).toHaveProperty('finishedAt', null);
-            expect(res.body).toHaveProperty('scheduledDate');
+            expect(res.body).toHaveProperty('scheduledDate', expect.any(Date));
             expect(res.body).toHaveProperty('totalPrice', expect.any(String));
             expect(res.body).toHaveProperty(
               'deliveryPrice',

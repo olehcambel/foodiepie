@@ -68,23 +68,5 @@
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.5"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".spec.ts$",
-    "transform": {
-      "^.+\\.(t)s$": "ts-jest"
-    },
-    "coverageDirectory": "../coverage",
-    "coveragePathIgnorePatterns": [
-      "./src/migrations",
-      "./src/seeds"
-    ],
-    "testEnvironment": "node"
   }
 }
