@@ -6,7 +6,7 @@ executors:
   node-db:
     docker:
       - image: circleci/mysql:latest
-      - image: circleci/node:12.18
+      - image: circleci/node:latest
         environment:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: db_test
