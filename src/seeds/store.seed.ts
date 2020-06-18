@@ -1,7 +1,7 @@
 import { DeepPartial, getRepository } from 'typeorm';
 import { Store } from '../entities/store.entity';
 import { Seed } from '../lib/seed-run/runner';
-import StoreAddressSeed from './store-location.seed';
+import CustomerSeed from './customer.seed';
 
 export const seed: DeepPartial<Store>[] = [
   {
@@ -9,14 +9,13 @@ export const seed: DeepPartial<Store>[] = [
     title: 'NYX',
     slug: 'nyx',
     status: 'active',
-    location: { id: 2 },
+    owner: { id: 1 },
   },
   {
     id: 2,
     title: 'Mafia',
     slug: 'mafia',
     status: 'active',
-    location: { id: 2 },
   },
 ];
 
@@ -27,7 +26,7 @@ export default class StoreSeed implements Seed {
     const exist = await this.repo.findOne();
     if (exist) return false;
 
-    await new StoreAddressSeed().up();
+    await new CustomerSeed().up();
 
     await this.repo.save(seed);
     return true;

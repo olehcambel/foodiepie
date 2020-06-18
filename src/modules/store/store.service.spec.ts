@@ -1,6 +1,7 @@
-import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import * as typeorm from 'typeorm';
+import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 import { Product } from '../../entities/product.entity';
 import { Store } from '../../entities/store.entity';
@@ -8,7 +9,6 @@ import { seed as productSeed } from '../../seeds/product.seed';
 import { seed as storeSeed } from '../../seeds/store.seed';
 import { CreateStoreDto, GetStoresDto, SaveProductsDto } from './dto/store.dto';
 import { StoreService } from './store.service';
-import typeorm = require('typeorm');
 
 describe('StoreService', () => {
   const storeRepo = {
@@ -19,6 +19,7 @@ describe('StoreService', () => {
       return data;
     },
     findOne: jest.fn(),
+    findOneOrFail: jest.fn(),
     update: jest.fn(),
     findAndCount: jest.fn(),
   };
@@ -110,11 +111,21 @@ describe('StoreService', () => {
 
   describe('update', () => {
     it('should succeed', async () => {
-      // service.findOne = jest.fn().mockReturnValueOnce()
       const storeID = 1;
       service.findOne = jest.fn().mockReturnValueOnce(storeSeed[storeID - 1]);
       storeRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
       const result = await service.update(1, storeID, { description: 'desc' });
+      expect(result).toEqual(storeSeed[storeID - 1]);
+    });
+  });
+
+  describe('updateFull', () => {
+    it('should succeed', async () => {
+      const storeID = 1;
+      service.findOne = jest.fn().mockReturnValueOnce(storeSeed[storeID - 1]);
+      storeRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      const result = await service.updateFull(storeID, { status: 'blocked' });
+
       expect(result).toEqual(storeSeed[storeID - 1]);
     });
   });
@@ -144,10 +155,12 @@ describe('StoreService', () => {
   describe('saveMenus', () => {
     //
     it('failed as store not found', async () => {
-      storeRepo.findOne.mockReturnValueOnce(undefined);
+      storeRepo.findOneOrFail.mockRejectedValueOnce(
+        new EntityNotFoundError('', ''),
+      );
       await expect(
         service.saveMenus(1, 1, { data: [] }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(EntityNotFoundError);
     });
 
     it('should save changed', async () => {
@@ -165,7 +178,6 @@ describe('StoreService', () => {
           translations: [],
         },
       ];
-      storeRepo.findOne.mockReturnValueOnce(storeSeed[0]);
       productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
@@ -174,13 +186,13 @@ describe('StoreService', () => {
         getMany: jest.fn().mockReturnValue(productSeed.slice(0, 2)),
       });
       const spyRemove = jest.fn();
-      typeorm.getManager = jest.fn().mockReturnValueOnce({
+      jest.spyOn(typeorm, 'getManager').mockReturnValueOnce({
         transaction: (cb) =>
           cb({
             remove: spyRemove,
             save: jest.fn(),
           }),
-      });
+      } as any);
 
       const result = await service.saveMenus(1, 1, { data });
 
@@ -190,7 +202,6 @@ describe('StoreService', () => {
 
     it('should remove all as no data', async () => {
       const data: SaveProductsDto['data'] = [];
-      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
       productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
@@ -199,13 +210,14 @@ describe('StoreService', () => {
         getMany: jest.fn().mockReturnValue(productSeed),
       });
       const spyRemove = jest.fn();
-      typeorm.getManager = jest.fn().mockReturnValueOnce({
+      jest.spyOn(typeorm, 'getManager').mockReturnValueOnce({
         transaction: (cb) =>
           cb({
             remove: spyRemove,
             save: jest.fn(),
           }),
-      });
+      } as any);
+
       const result = await service.saveMenus(1, 1, { data });
 
       expect(result).toHaveLength(0);
@@ -221,15 +233,14 @@ describe('StoreService', () => {
         getMany: jest.fn().mockReturnValue([]),
       });
       const spyRemove = jest.fn();
-      typeorm.getManager = jest.fn().mockReturnValueOnce({
+      jest.spyOn(typeorm, 'getManager').mockReturnValueOnce({
         transaction: (cb) =>
           cb({
             remove: spyRemove,
             save: jest.fn(),
           }),
-      });
-      // productRepo.find = jest.fn().mockReturnValueOnce([]);
-      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
+      } as any);
+
       const data: SaveProductsDto['data'] = [
         {
           price: '10',
@@ -252,7 +263,6 @@ describe('StoreService', () => {
           translations: [{ title: 'title', language: { id: 1 } }],
         },
       ];
-      storeRepo.findOne.mockReturnValueOnce((id: number) => storeSeed[id - 1]);
       productRepo.createQueryBuilder.mockReturnValueOnce({
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
@@ -261,13 +271,14 @@ describe('StoreService', () => {
         getMany: jest.fn().mockReturnValue(expectRemove),
       });
       const spyRemove = jest.fn();
-      typeorm.getManager = jest.fn().mockReturnValueOnce({
+      jest.spyOn(typeorm, 'getManager').mockReturnValueOnce({
         transaction: (cb) =>
           cb({
             remove: spyRemove,
             save: jest.fn(),
           }),
-      });
+      } as any);
+
       const data: SaveProductsDto['data'] = [
         {
           price: '10',

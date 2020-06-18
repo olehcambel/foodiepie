@@ -36,7 +36,7 @@ export class Order implements AppEntity.Order {
   @Column({ type: 'timestamp', nullable: true })
   finishedAt?: Date;
 
-  @Column({ width: 1, default: false })
+  @Column({ default: false })
   isPaid: boolean;
 
   @Column('decimal', { precision: 9, scale: 2 })

@@ -1,7 +1,7 @@
 import { DeepPartial, getRepository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { Seed } from '../lib/seed-run/runner';
-import StoreAddressSeed from './store-location.seed';
+import StoreSeed from './store.seed';
 
 export const seed: DeepPartial<Product>[] = [
   {
@@ -17,7 +17,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 2,
     price: '100',
     status: 'active',
-    store: { id: 2 },
+    store: { id: 1 },
     externalID: 'ext_2',
     translations: [],
     // currency: { id: 1 },
@@ -26,7 +26,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 3,
     price: '200',
     status: 'active',
-    store: { id: 4 },
+    store: { id: 1 },
     externalID: 'ext_3',
     translations: [],
     // currency: { id: 1 },
@@ -35,7 +35,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 4,
     price: '5',
     status: 'active',
-    store: { id: 2 },
+    store: { id: 1 },
     externalID: 'ext_4',
     translations: [],
     // currency: { id: 1 },
@@ -53,7 +53,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 6,
     price: '150',
     status: 'active',
-    store: { id: 1 },
+    store: { id: 2 },
     externalID: 'ext_6',
     translations: [],
     // currency: { id: 2 },
@@ -71,7 +71,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 8,
     price: '24',
     status: 'active',
-    store: { id: 4 },
+    store: { id: 2 },
     externalID: 'ext_8',
     translations: [],
     // currency: { id: 1 },
@@ -89,7 +89,7 @@ export const seed: DeepPartial<Product>[] = [
     id: 10,
     price: '10',
     status: 'active',
-    store: { id: 3 },
+    store: { id: 2 },
     externalID: 'ext_10',
     translations: [],
     // currency: { id: 1 },
@@ -103,7 +103,7 @@ export default class ProductSeed implements Seed {
     const exist = await this.repo.findOne();
     if (exist) return false;
 
-    await new StoreAddressSeed().up();
+    await new StoreSeed().up();
     // await new CurrencySeed().up();
 
     await this.repo.save(seed);

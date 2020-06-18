@@ -5,26 +5,25 @@ executors:
   node-db:
     docker:
       - image: circleci/node:12.16
-      - image: circleci/mysql:5.7
+      - image: circleci/postgres:latest-postgis-ram
         environment:
-          MYSQL_ROOT_PASSWORD: passw0rd
-          MYSQL_DATABASE: foodiepie_test
-commands:
-  init-db:
-    steps:
-      - run: sudo apt-get install default-mysql-client
-      - run:
-          # Our primary container isn't MYSQL so run a sleep command until it's ready.
-          name: Waiting for MySQL to be ready
-          command: |
-            for i in `seq 1 30`;
-            do
-              nc -z 127.0.0.1 3306 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
-
+          TYPEORM_USERNAME: 'root'
+          TYPEORM_PASSWORD: 'password'
+          TYPEORM_DATABASE: 'db_test'
+# commands:
+#   init-db:
+#     steps:
+#       - run: sudo apt-get install default-postgres-client
+#       - run:
+#           name: Waiting for Postgres to be ready
+#           command: |
+#             for i in `seq 1 10`;
+#             do
+#               nc -z localhost 5432 && echo Success && exit 0
+#               echo -n .
+#               sleep 1
+#             done
+#             echo Failed waiting for Postgres && exit 1
 jobs:
   build-and-test:
     executor:
@@ -34,7 +33,7 @@ jobs:
       - node/with-cache:
           steps:
             - run: npm install
-            - init-db
+            # - init-db
             - run: npm test
 
 workflows:

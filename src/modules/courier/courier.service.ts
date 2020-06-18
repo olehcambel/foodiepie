@@ -61,7 +61,7 @@ export class CourierService {
     });
   }
 
-  async find(params?: GetCouriersDto): Promise<CouriersResDto> {
+  async find(params: GetCouriersDto = {}): Promise<CouriersResDto> {
     const [data, count] = await this.courierRepo.findAndCount({
       take: params.limit || PAGE_LIMIT,
       skip: params.offset || PAGE_OFFSET,

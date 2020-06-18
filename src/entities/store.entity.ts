@@ -45,7 +45,9 @@ export class Store implements AppEntity.Store {
   })
   readonly updatedAt: Date;
 
-  @OneToOne(() => StoreLocation, { cascade: ['update', 'insert'] })
+  @OneToOne(() => StoreLocation, (l) => l.store, {
+    cascade: ['update', 'insert'],
+  })
   location: StoreLocation;
 
   @ManyToOne(() => Customer, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })

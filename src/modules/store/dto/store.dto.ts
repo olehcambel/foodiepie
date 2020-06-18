@@ -87,7 +87,7 @@ export class GetStoresDto {
   @IsOptional()
   fields?: (keyof Store)[];
 
-  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contain[]' })
+  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contains[]' })
   @ArrayMinSize(1)
   @IsIn(contain, { each: true })
   @IsOptional()

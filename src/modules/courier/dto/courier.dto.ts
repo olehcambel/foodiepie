@@ -150,7 +150,7 @@ export class GetCourierOrdersDto {
   @IsOptional()
   fields?: (keyof Order)[];
 
-  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contain[]' })
+  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contains[]' })
   @ArrayMinSize(1)
   @IsIn(contain, { each: true })
   @IsOptional()

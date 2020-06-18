@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PAGE_OFFSET } from '../../common/constants';
+import { PAGE_OFFSET, PAGE_LIMIT } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
 import { seed } from '../../seeds/courier.seed';
@@ -67,14 +67,20 @@ describe('CourierService', () => {
     };
 
     it('with new email', async () => {
-      courierRepo.createQueryBuilder.mockReturnValueOnce({
-        where: jest.fn().mockReturnThis(),
-        getCount: jest.fn().mockReturnValue(0),
-      });
-
+      service['emailExist'] = jest.fn();
       const result = await service.create(data);
 
       expect(result).toEqual(seed[0].id);
+    });
+
+    it('with exist email', async () => {
+      service['emailExist'] = jest
+        .fn()
+        .mockRejectedValue(new BadRequestException());
+
+      await expect(service.create(data)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
   });
 
@@ -89,6 +95,18 @@ describe('CourierService', () => {
       expect(courierRepo.findAndCount).toHaveBeenCalledWith({
         take: params.limit,
         skip: params.offset,
+      });
+    });
+
+    it('with default pagination', async () => {
+      const expectData = { data: seed[0], count: seed.length };
+      courierRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
+
+      const result = await service.find();
+      expect(result).toEqual({ data: seed[0], count: seed.length });
+      expect(courierRepo.findAndCount).toHaveBeenCalledWith({
+        take: PAGE_LIMIT,
+        skip: PAGE_OFFSET,
       });
     });
   });
@@ -124,6 +142,27 @@ describe('CourierService', () => {
     });
   });
 
+  describe('emailExist', () => {
+    it('should exist', async () => {
+      courierRepo.createQueryBuilder.mockReturnValueOnce({
+        where: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockReturnValue(1),
+      });
+      await expect(service['emailExist']('test@t.st')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should not exist', async (done) => {
+      courierRepo.createQueryBuilder.mockReturnValueOnce({
+        where: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockReturnValue(0),
+      });
+      await service['emailExist']('test@t.st');
+      done();
+    });
+  });
+
   describe('acceptOrder', () => {
     it('should succeed', async () => {
       const data = orderSeed[3];
@@ -147,7 +186,6 @@ describe('CourierService', () => {
       const params: GetCourierOrdersDto = {
         fields: ['id'],
         contains: ['courier'],
-        limit: 10,
       };
       const courierID = 1;
       const expectData = { data: seed[0], count: seed.length };
@@ -156,7 +194,7 @@ describe('CourierService', () => {
       const result = await service.getOrders(courierID, params);
 
       expect(orderRepo.findAndCount).toHaveBeenCalledWith({
-        take: params.limit,
+        take: PAGE_LIMIT,
         skip: PAGE_OFFSET,
         relations: params.contains,
         select: params.fields,

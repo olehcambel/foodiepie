@@ -19,7 +19,7 @@ import { OrderCheckoutDto } from '../src/modules/order/dto/order.dto';
 
 const fake = {
   storeID: 0,
-  languageID: 0,
+  languageID: 1,
   products: [0, 0] as [number, number],
   manager: {
     token: '',
@@ -353,7 +353,10 @@ describe('AppController (e2e)', () => {
             expect(res.body).toHaveProperty('customer');
             expect(res.body).toHaveProperty('orderAddress');
             expect(res.body).toHaveProperty('finishedAt', null);
-            expect(res.body).toHaveProperty('scheduledDate', expect.any(Date));
+            expect(res.body).toHaveProperty(
+              'scheduledDate',
+              expect.any(String),
+            );
             expect(res.body).toHaveProperty('totalPrice', expect.any(String));
             expect(res.body).toHaveProperty(
               'deliveryPrice',

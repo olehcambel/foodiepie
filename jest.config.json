@@ -9,7 +9,9 @@
   "coveragePathIgnorePatterns": [
     "./src/migrations",
     "./src/seeds",
-    "./src/entities"
+    "./src/entities",
+    ".dto.ts"
   ],
-  "testEnvironment": "node"
+  "testEnvironment": "node",
+  "setupFiles": ["<rootDir>/../test/setup.ts"]
 }

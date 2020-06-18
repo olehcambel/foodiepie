@@ -15,6 +15,12 @@ export class StatsService {
     private readonly orderRepo: Repository<Order>,
   ) {}
 
+  // async qtest(id: number, fields: string[]): Promise<GetStatCourierResDto> {
+  //   // fields: 'orderCount', 'orderPayout', 'averageTime', 'commonAddress',
+  //   //
+  //   //
+  // }
+
   async getCourier(
     id: number,
     fields: string[],
@@ -47,7 +53,7 @@ export class StatsService {
     }
 
     if (fields.includes('orderPayout')) {
-      selection.push('sum(o.price) as orderPayout');
+      selection.push('sum(o.totalPrice) as orderPayout');
     }
 
     if (fields.includes('averageTime')) {
