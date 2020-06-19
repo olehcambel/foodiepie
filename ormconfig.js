@@ -13,22 +13,21 @@ const dir = process.env.TS ? 'src' : 'dist';
 config({ path: IS_TEST ? `./${dir}/../.env.test` : `./${dir}/../.env` });
 
 const {
-  TYPEORM_PORT,
-  TYPEORM_HOST,
-  TYPEORM_USERNAME,
-  TYPEORM_PASSWORD,
-  TYPEORM_DATABASE,
+  POSTGRES_USER,
+  POSTGRES_PASSWORD,
+  POSTGRES_DB,
   TYPEORM_LOGGING,
 } = process.env;
 
 /** @type {import('@nestjs/typeorm').TypeOrmModuleOptions} */
 const options = {
-  port: (TYPEORM_PORT && Number(TYPEORM_PORT)) || 5432,
-  host: TYPEORM_HOST,
-  username: TYPEORM_USERNAME,
-  password: TYPEORM_PASSWORD,
-  database: TYPEORM_DATABASE,
-  // database: IS_TEST ? TYPEORM_DATABASE + '_test' : TYPEORM_DATABASE,
+  port: 5432,
+  // port: (TYPEORM_PORT && Number(TYPEORM_PORT)) || 5432,
+  // host: TYPEORM_HOST,
+  username: POSTGRES_USER,
+  password: POSTGRES_PASSWORD,
+  database: POSTGRES_DB,
+  // database: IS_TEST ? POSTGRES_DB + '_test' : POSTGRES_DB,
   type: 'postgres',
 
   // synchronize: IS_TEST,

@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -19,6 +20,7 @@ import {
   statusArray as courierStatus,
 } from '../../../entities/courier.entity';
 import { Order, statusArray } from '../../../entities/order.entity';
+import { boolTransform } from '../../../lib/swagger-dto';
 
 export class CreateCandidate implements DeepPartial<Courier> {
   @IsEmail()
@@ -40,6 +42,32 @@ export class CreateCandidate implements DeepPartial<Courier> {
   @ValidateNested()
   @IsOptional()
   language?: LanguageRefDto;
+}
+
+const cFields: (keyof Courier)[] = [
+  'id',
+  'firstName',
+  'lastName',
+  'imageURL',
+  'status',
+  'email',
+  'description',
+];
+
+const cContains: (keyof Courier)[] = ['language'];
+
+export class GetCourierDto {
+  @ApiPropertyOptional({ enum: cFields, isArray: true, name: 'fields[]' })
+  @IsIn(cFields, { each: true })
+  @ArrayMinSize(1)
+  @IsOptional()
+  fields?: (keyof Courier)[];
+
+  @ApiPropertyOptional({ enum: cContains, isArray: true, name: 'contains[]' })
+  @IsIn(cContains, { each: true })
+  // @ArrayMinSize(1)
+  @IsOptional()
+  contains?: (keyof Courier)[];
 }
 
 export class GetCouriersDto {
@@ -98,7 +126,7 @@ export class UpdateCourierFullDto implements DeepPartial<AppEntity.Courier> {
   description?: string;
 }
 
-const fields: (keyof Order)[] = [
+const oFields: (keyof Order)[] = [
   'id',
   'status',
   'description',
@@ -109,8 +137,9 @@ const fields: (keyof Order)[] = [
   'createdAt',
 ];
 
-const contain: (keyof Order)[] = [
+const oContains: (keyof Order)[] = [
   'customer',
+  'courier',
   'storeLocation',
   'orderAddress',
   'orderItems',
@@ -120,16 +149,19 @@ class CourierOrdersFilterDto implements DeepPartial<Order> {
   // not supported
   // @ApiPropertyOptional({
   //   enum: statusArray,
-  //   isArray: true,
   //   name: 'filters[status]',
   // })
-  @IsIn(statusArray, { each: true })
-  @ArrayMinSize(1)
+  @IsIn(statusArray)
   @IsOptional()
   status: AppEntity.OrderStatus;
 }
 
 export class GetCourierOrdersDto {
+  @IsOptional()
+  @Transform(boolTransform)
+  @IsBoolean()
+  isSearch?: boolean;
+
   @IsInt()
   @IsOptional()
   @Min(1)
@@ -144,15 +176,15 @@ export class GetCourierOrdersDto {
   @Type(() => Number)
   offset?: number;
 
-  @ApiPropertyOptional({ enum: fields, isArray: true, name: 'fields[]' })
-  @IsIn(fields, { each: true })
+  @ApiPropertyOptional({ enum: oFields, isArray: true, name: 'fields[]' })
+  @IsIn(oFields, { each: true })
   @ArrayMinSize(1)
   @IsOptional()
   fields?: (keyof Order)[];
 
-  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contains[]' })
+  @ApiPropertyOptional({ enum: oContains, isArray: true, name: 'contains[]' })
   @ArrayMinSize(1)
-  @IsIn(contain, { each: true })
+  @IsIn(oContains, { each: true })
   @IsOptional()
   contains?: (keyof Order)[];
 

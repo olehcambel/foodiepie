@@ -7,9 +7,9 @@ executors:
       - image: circleci/node:12.16
       - image: circleci/postgres:latest-postgis-ram
         environment:
-          TYPEORM_USERNAME: 'root'
-          TYPEORM_PASSWORD: 'password'
-          TYPEORM_DATABASE: 'db_test'
+          POSTGRES_USER: 'root'
+          POSTGRES_PASSWORD: 'password'
+          POSTGRES_DB: 'db_test'
 # commands:
 #   init-db:
 #     steps:

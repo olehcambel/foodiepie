@@ -82,7 +82,9 @@ describe('AppController (e2e)', () => {
       }),
     );
     await app.init();
+  });
 
+  beforeAll(async () => {
     await conn.dropDatabase();
     await conn.synchronize();
     await new ManagerSeed().up();

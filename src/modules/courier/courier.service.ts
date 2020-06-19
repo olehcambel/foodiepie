@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindConditions, Repository } from 'typeorm';
+import { DeepPartial, FindConditions, Repository, IsNull } from 'typeorm';
 import { PAGE_LIMIT, PAGE_OFFSET, SALT_LENGTH } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
@@ -10,6 +10,7 @@ import {
   CreateCandidate,
   GetCourierOrdersDto,
   GetCouriersDto,
+  GetCourierDto,
 } from './dto/courier.dto';
 import { OrdersResDto } from '../order/dto/order-res.dto';
 
@@ -46,18 +47,20 @@ export class CourierService {
     return id;
   }
 
-  findOne(id: number): Promise<Courier> {
+  findOne(id: number, params: GetCourierDto = {}): Promise<Courier> {
     return this.courierRepo.findOne(id, {
-      select: [
-        'id',
-        'firstName',
-        'lastName',
-        'imageURL',
-        'status',
-        'email',
-        'description',
-      ],
-      relations: ['language'],
+      select: params.fields,
+      // temp solution with ||
+      //  || [
+      //   'id',
+      //   'firstName',
+      //   'lastName',
+      //   'imageURL',
+      //   'status',
+      //   'email',
+      //   'description',
+      // ],
+      relations: params.contains,
     });
   }
 
@@ -112,14 +115,18 @@ export class CourierService {
     return order;
   }
 
+  // TODO: customer data should be available only if status is active
   async getOrders(
     courierID: number,
-    params?: GetCourierOrdersDto,
+    params: GetCourierOrdersDto,
   ): Promise<OrdersResDto> {
     const where: FindConditions<Order> = {
       ...params.filters,
-      courier: { id: courierID },
     };
+
+    // use status: 'scheduled' (?)
+    where.courier = { id: params.isSearch ? IsNull() : courierID };
+
     const [data, count] = await this.orderRepo.findAndCount({
       select: params.fields,
       relations: params.contains,

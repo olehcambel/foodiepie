@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PAGE_OFFSET, PAGE_LIMIT } from '../../common/constants';
+import { IsNull } from 'typeorm';
+import { PAGE_LIMIT, PAGE_OFFSET } from '../../common/constants';
 import { Courier } from '../../entities/courier.entity';
 import { Order } from '../../entities/order.entity';
 import { seed } from '../../seeds/courier.seed';
@@ -188,7 +189,7 @@ describe('CourierService', () => {
         contains: ['courier'],
       };
       const courierID = 1;
-      const expectData = { data: seed[0], count: seed.length };
+      const expectData = { data: [seed[0]], count: seed.length };
       orderRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
 
       const result = await service.getOrders(courierID, params);
@@ -201,7 +202,28 @@ describe('CourierService', () => {
         where: { courier: { id: courierID } },
       });
 
-      expect(result).toEqual({ data: seed[0], count: seed.length });
+      expect(result).toEqual(expectData);
     });
+  });
+
+  it('should search for new orders', async () => {
+    const params: GetCourierOrdersDto = {
+      isSearch: true,
+    };
+    const courierID = 1;
+    const expectData = { data: [seed[3]], count: seed.length };
+    orderRepo.findAndCount.mockReturnValueOnce(Object.values(expectData));
+
+    const result = await service.getOrders(courierID, params);
+
+    expect(orderRepo.findAndCount).toHaveBeenCalledWith({
+      take: PAGE_LIMIT,
+      skip: PAGE_OFFSET,
+      relations: params.contains,
+      select: undefined,
+      where: { courier: { id: IsNull() } },
+    });
+
+    expect(result).toEqual(expectData);
   });
 });

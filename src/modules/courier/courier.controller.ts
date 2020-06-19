@@ -20,6 +20,7 @@ import {
   CreateCandidate,
   GetCourierOrdersDto,
   UpdateCourierDto,
+  GetCourierDto,
 } from './dto/courier.dto';
 
 @Controller('couriers')
@@ -54,10 +55,24 @@ export class CourierController {
     return this.service.acceptOrder(req.user.id, orderID);
   }
 
+  // @Put('orders/:orderId/finish')
+  // @ApiOperation({ summary: 'Order has been delivered' })
+  // @ApiUserType('courier')
+  // // TODO: maybe merge with /accept ?
+  // finishOrder(
+  //   @Param('orderId', ParseIntPipe) orderID: number,
+  //   @Req() req: JWTReq.User,
+  // ): Promise<Order> {
+  //   return this.service.finishOrder(req.user.id, orderID);
+  // }
+
   @Get('me')
   @ApiUserType('courier')
-  getMe(@Req() req: JWTReq.User): Promise<Courier> {
-    return this.service.findOne(req.user.id);
+  getMe(
+    @Req() req: JWTReq.User,
+    @Query() params: GetCourierDto,
+  ): Promise<Courier> {
+    return this.service.findOne(req.user.id, params);
   }
 
   @Put('me')
