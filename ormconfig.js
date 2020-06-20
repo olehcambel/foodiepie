@@ -13,9 +13,9 @@ const dir = process.env.TS ? 'src' : 'dist';
 config({ path: IS_TEST ? `./${dir}/../.env.test` : `./${dir}/../.env` });
 
 const {
-  POSTGRES_USER,
-  POSTGRES_PASSWORD,
-  POSTGRES_DB,
+  TYPEORM_USERNAME,
+  TYPEORM_PASSWORD,
+  TYPEORM_DATABASE,
   TYPEORM_LOGGING,
 } = process.env;
 
@@ -24,10 +24,10 @@ const options = {
   port: 5432,
   // port: (TYPEORM_PORT && Number(TYPEORM_PORT)) || 5432,
   // host: TYPEORM_HOST,
-  username: POSTGRES_USER,
-  password: POSTGRES_PASSWORD,
-  database: POSTGRES_DB,
-  // database: IS_TEST ? POSTGRES_DB + '_test' : POSTGRES_DB,
+  username: TYPEORM_USERNAME,
+  password: TYPEORM_PASSWORD,
+  database: TYPEORM_DATABASE,
+  // database: IS_TEST ? TYPEORM_DATABASE + '_test' : TYPEORM_DATABASE,
   type: 'postgres',
 
   // synchronize: IS_TEST,

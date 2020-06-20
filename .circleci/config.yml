@@ -1,42 +1,78 @@
 version: 2.1
 orbs:
   node: circleci/node@1.1.6
+  # coveralls: coveralls/coveralls@1.0.6
 executors:
   node-db:
     docker:
       - image: circleci/node:12.16
+        environment:
+          TYPEORM_USERNAME: 'root'
+          TYPEORM_PASSWORD: 'password'
+          TYPEORM_DATABASE: 'db_test'
+          JWT_CONFIG_SECRET: 'XXX'
       - image: circleci/postgres:latest-postgis-ram
         environment:
           POSTGRES_USER: 'root'
           POSTGRES_PASSWORD: 'password'
           POSTGRES_DB: 'db_test'
-# commands:
-#   init-db:
-#     steps:
-#       - run: sudo apt-get install default-postgres-client
-#       - run:
-#           name: Waiting for Postgres to be ready
-#           command: |
-#             for i in `seq 1 10`;
-#             do
-#               nc -z localhost 5432 && echo Success && exit 0
-#               echo -n .
-#               sleep 1
-#             done
-#             echo Failed waiting for Postgres && exit 1
+commands:
+  init-db:
+    steps:
+      - checkout
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+
 jobs:
-  build-and-test:
+  install-deps:
+    # executor: node-db
+    docker:
+      - image: circleci/node:12.16
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: npm i
+            - run:
+                name: ts build
+                command: npm run build
+  unit-test:
     executor:
       name: node-db
     steps:
       - checkout
       - node/with-cache:
           steps:
-            - run: npm install
-            # - init-db
-            - run: npm test
+            # temporary db-connection. later controllers will be mocked
+            # https://github.com/jmcdo29/testing-nestjs/blob/master/apps/typeorm-sample/src/cat/cat.controller.spec.ts
+            # - coveralls/upload
+            # npm run test:cov
+            - init-db
+            - run: npm run test:ci:temp
+
+  e2e-test:
+    executor:
+      name: node-db
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - init-db
+            - run: npm run test:e2e
 
 workflows:
   build-and-test:
     jobs:
-      - build-and-test
+      - install-deps
+      - unit-test:
+          requires:
+            - install-deps
+      - e2e-test:
+          requires:
+            - install-deps

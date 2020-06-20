@@ -1,29 +1,48 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { seed as languageSeed } from '../../seeds/language.seed';
 import { AppController } from './app.controller';
-import { PrefixlessModule } from './prefixless.module';
+import { AppService } from './app.service';
 
 describe('AppController', () => {
   let controller: AppController;
-  let conn: Connection;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forRoot(), PrefixlessModule],
+      controllers: [AppController],
+      providers: [
+        {
+          provide: AppService,
+          useValue: {
+            getLangs: jest.fn().mockImplementation(() => languageSeed),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<AppController>(AppController);
-    conn = module.get<Connection>(Connection);
-  });
-
-  afterEach(async () => {
-    if (conn) {
-      await conn.close();
-    }
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getLangs', () => {
+    it('should succeed', async () => {
+      const result = await controller.getLangs();
+      expect(result).toEqual([
+        {
+          id: 1,
+          code: 'en',
+        },
+        {
+          id: 2,
+          code: 'ru',
+        },
+        {
+          id: 3,
+          code: 'fr',
+        },
+      ]);
+    });
   });
 });
