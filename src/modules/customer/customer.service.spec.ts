@@ -1,24 +1,25 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Customer } from '../../entities/customer.entity';
 import { seed } from '../../seeds/customer.seed';
 import { CreateCustomerDto } from '../auth/dto/auth.dto';
 import { CustomerService } from './customer.service';
 
+// @see https://github.com/shantanoo-desai/nestjs-products-api/blob/master/src/products/products.service.spec.ts
 describe('CustomerService', () => {
   let service: CustomerService;
-  let customerRepo: Repository<Customer>;
 
   // only base methods
-  const mockRepo = {
+  const customerRepo = {
     save() {
       return seed[0];
     },
     findOne(id: number) {
       return seed[id - 1];
     },
+    update: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -27,15 +28,12 @@ describe('CustomerService', () => {
         CustomerService,
         {
           provide: getRepositoryToken(Customer),
-          useValue: mockRepo,
+          useValue: customerRepo,
         },
       ],
     }).compile();
 
     service = module.get<CustomerService>(CustomerService);
-    customerRepo = module.get<Repository<Customer>>(
-      getRepositoryToken(Customer),
-    );
   });
 
   it('should be defined', () => {
@@ -50,7 +48,7 @@ describe('CustomerService', () => {
     };
 
     it('with new email', async () => {
-      customerRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      customerRepo.createQueryBuilder.mockReturnValueOnce({
         where: jest.fn().mockReturnThis(),
         getCount: jest.fn().mockReturnValue(0),
       });
@@ -62,7 +60,7 @@ describe('CustomerService', () => {
 
     it('throw on exist email', async () => {
       const getCountSpy = jest.fn().mockReturnValueOnce(1);
-      customerRepo.createQueryBuilder = jest.fn().mockReturnValueOnce({
+      customerRepo.createQueryBuilder.mockReturnValueOnce({
         where: jest.fn().mockReturnThis(),
         getCount: getCountSpy,
       });
@@ -83,7 +81,7 @@ describe('CustomerService', () => {
   describe('update', () => {
     it('should succeed', async () => {
       const id = 1;
-      customerRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      customerRepo.update.mockReturnValueOnce({ affected: 1 });
       const result = await service.update(id, {
         status: 'blocked',
         name: 'newName',
@@ -95,14 +93,14 @@ describe('CustomerService', () => {
 
   describe('delete', () => {
     it('should succeed', async () => {
-      customerRepo.update = jest.fn().mockReturnValueOnce({ affected: 1 });
+      customerRepo.update.mockReturnValueOnce({ affected: 1 });
 
       const result = await service.delete(1);
       expect(result).toEqual(true);
     });
 
     it('should fail on not found', async () => {
-      customerRepo.update = jest.fn().mockReturnValueOnce({ affected: 0 });
+      customerRepo.update.mockReturnValueOnce({ affected: 0 });
 
       await expect(service.delete(1)).rejects.toBeInstanceOf(
         BadRequestException,

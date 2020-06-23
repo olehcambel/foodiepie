@@ -64,7 +64,7 @@ const fields: (keyof Store)[] = [
   'title',
 ];
 
-const contain: (keyof Store)[] = ['location'];
+const contains: (keyof Store)[] = ['location'];
 
 export class GetStoresDto {
   @IsInt()
@@ -87,9 +87,9 @@ export class GetStoresDto {
   @IsOptional()
   fields?: (keyof Store)[];
 
-  @ApiPropertyOptional({ enum: contain, isArray: true, name: 'contain[]' })
+  @ApiPropertyOptional({ enum: contains, isArray: true, name: 'contains[]' })
   @ArrayMinSize(1)
-  @IsIn(contain, { each: true })
+  @IsIn(contains, { each: true })
   @IsOptional()
   contains?: (keyof Store)[];
 }

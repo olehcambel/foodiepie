@@ -2,28 +2,33 @@
 
 'use strict';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { config } = require('dotenv');
+
 const IS_TEST = process.env.NODE_ENV === 'test';
+
 if (IS_TEST) process.env.TS = 'true';
 const dir = process.env.TS ? 'src' : 'dist';
+// FIXME: temp solution. if test -> use
+config({ path: IS_TEST ? `./${dir}/../.env.test` : `./${dir}/../.env` });
 
 const {
-  MYSQL_PORT,
-  MYSQL_HOST,
-  MYSQL_USERNAME,
-  MYSQL_PASSWORD,
-  MYSQL_DATABASE,
-  MYSQL_LOG,
+  TYPEORM_USERNAME,
+  TYPEORM_PASSWORD,
+  TYPEORM_DATABASE,
+  TYPEORM_LOGGING,
 } = process.env;
 
 /** @type {import('@nestjs/typeorm').TypeOrmModuleOptions} */
 const options = {
-  port: (MYSQL_PORT && Number(MYSQL_PORT)) || 3306,
-  host: MYSQL_HOST,
-  username: MYSQL_USERNAME,
-  password: MYSQL_PASSWORD,
-  database: IS_TEST ? MYSQL_DATABASE + '_test' : MYSQL_DATABASE,
-  type: 'mysql',
-  bigNumberStrings: true,
+  port: 5432,
+  // port: (TYPEORM_PORT && Number(TYPEORM_PORT)) || 5432,
+  // host: TYPEORM_HOST,
+  username: TYPEORM_USERNAME,
+  password: TYPEORM_PASSWORD,
+  database: TYPEORM_DATABASE,
+  // database: IS_TEST ? TYPEORM_DATABASE + '_test' : TYPEORM_DATABASE,
+  type: 'postgres',
 
   // synchronize: IS_TEST,
   // dropSchema: IS_TEST,
@@ -31,7 +36,7 @@ const options = {
   migrations: [`${dir}/migrations/*.{ts,js}`],
   entities: [`${dir}/entities/*.entity.{ts,js}`],
   subscribers: [`${dir}/subscribers/*.{ts,js}`],
-  logging: IS_TEST ? false : ['true', '1'].includes(MYSQL_LOG),
+  logging: IS_TEST ? false : ['true', '1'].includes(TYPEORM_LOGGING),
   cli: {
     entitiesDir: './src/entities',
     migrationsDir: './src/migrations',

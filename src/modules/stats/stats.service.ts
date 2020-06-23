@@ -15,6 +15,12 @@ export class StatsService {
     private readonly orderRepo: Repository<Order>,
   ) {}
 
+  // async qtest(id: number, fields: string[]): Promise<GetStatCourierResDto> {
+  //   // fields: 'orderCount', 'orderPayout', 'averageTime', 'commonAddress',
+  //   //
+  //   //
+  // }
+
   async getCourier(
     id: number,
     fields: string[],
@@ -40,12 +46,6 @@ export class StatsService {
     id: number,
     fields: string[],
   ): Promise<void | GetStatCourierResDto> {
-    const builder = this.orderRepo
-      .createQueryBuilder('o')
-      .innerJoin('o.courier', 'c')
-      .where('c.id = :id', { id })
-      .andWhere('o.status = :status', { status: 'delivered' });
-
     const selection: string[] = [];
 
     if (fields.includes('orderCount')) {
@@ -53,7 +53,7 @@ export class StatsService {
     }
 
     if (fields.includes('orderPayout')) {
-      selection.push('sum(o.price) as orderPayout');
+      selection.push('sum(o.totalPrice) as orderPayout');
     }
 
     if (fields.includes('averageTime')) {
@@ -64,6 +64,12 @@ export class StatsService {
     }
 
     if (!selection.length) return;
+    const builder = this.orderRepo
+      .createQueryBuilder('o')
+      .innerJoin('o.courier', 'c')
+      .where('c.id = :id', { id })
+      .andWhere('o.status = :status', { status: 'delivered' });
+
     builder.select(selection);
     return builder.getRawOne();
   }
@@ -78,9 +84,9 @@ export class StatsService {
 
     return this.orderAddressRepo
       .createQueryBuilder('oA')
+      .select('oA.address', 'commonAddress')
       .innerJoin('oA.order', 'o')
       .innerJoin('o.courier', 'c')
-      .select('oA.address', 'commonAddress')
       .where('c.id = :id', { id })
       .andWhere('o.status = :status', { status: 'delivered' })
       .groupBy('oA.address')

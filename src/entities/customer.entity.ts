@@ -1,5 +1,12 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Language } from './language.entity';
 
 // TODO: export abstract class BaseUserEntity {}
@@ -9,6 +16,12 @@ export const statusArray: AppEntity.CustomerStatus[] = [
   'blocked',
   'deleted',
 ];
+
+// export enum CustomerStatus {
+//   Active = 'active',
+//   Blocked = 'blocked',
+//   Deleted = 'deleted',
+// }
 
 @Entity('customers')
 export class Customer implements AppEntity.Customer {
@@ -39,14 +52,16 @@ export class Customer implements AppEntity.Customer {
   @Column({ length: 255, nullable: true })
   description?: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  // @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamptz' })
   readonly createdAt: Date;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  // @Column({
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP',
+  //   onUpdate: 'CURRENT_TIMESTAMP',
+  // })
+  @UpdateDateColumn({ type: 'timestamptz' })
   readonly updatedAt: Date;
 
   @ManyToOne(() => Language, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })

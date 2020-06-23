@@ -17,6 +17,7 @@ import { DeepPartial } from 'typeorm';
 import { OrderAddress } from '../../../entities/order-address.entity';
 import { OrderItem } from '../../../entities/order-item.entity';
 import { Order } from '../../../entities/order.entity';
+import { RefDto } from '../../../common/ref-entity.dto';
 
 class OrderAddressDto implements DeepPartial<OrderAddress> {
   @Length(1, 100)
@@ -50,6 +51,10 @@ export class OrderCheckoutDto implements DeepPartial<Order> {
   @IsDateString()
   @IsOptional()
   scheduledDate?: Date;
+
+  @Type(() => RefDto)
+  @ValidateNested()
+  storeLocation: RefDto;
 
   @Type(() => OrderAddressDto)
   @ValidateNested()

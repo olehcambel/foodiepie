@@ -1,12 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
   ManyToOne,
-  PrimaryGeneratedColumn,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Store } from './store.entity';
 import { ProductTranslation } from './product-translation.entity';
+import { Store } from './store.entity';
 
 export const statusArray: AppEntity.ProductStatus[] = ['active', 'deleted'];
 
@@ -25,6 +26,7 @@ export class Product implements AppEntity.Product {
   price: string;
 
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
+  @ApiProperty({ enum: statusArray })
   status: AppEntity.ProductStatus;
 
   @ManyToOne(() => Store, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })

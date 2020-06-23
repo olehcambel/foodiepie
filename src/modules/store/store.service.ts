@@ -51,17 +51,17 @@ export class StoreService {
 
   private isAffected(affected: number): void {
     if (!affected) {
-      throw new ForbiddenException('No access to entity');
+      throw new ForbiddenException('No access to data');
     }
   }
 
   async update(
-    userID: number,
+    ownerID: number,
     storeID: number,
     params: UpdateStoreDto,
   ): Promise<Store> {
     const res = await this.storeRepo.update(
-      { id: storeID, owner: { id: userID } },
+      { id: storeID, owner: { id: ownerID } },
       params,
     );
     this.isAffected(res.affected);
@@ -104,13 +104,11 @@ export class StoreService {
     storeID: number,
     params: SaveProductsDto,
   ): Promise<Product[]> {
-    const store = await this.storeRepo.findOne(storeID, {
+    // check if store exists
+    await this.storeRepo.findOneOrFail(storeID, {
       select: ['id'],
       where: { owner: { id: userID } },
     });
-    if (!store) {
-      throw new ForbiddenException();
-    }
 
     const curMenu = await this.productRepo
       .createQueryBuilder('p')

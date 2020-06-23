@@ -1,10 +1,10 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../decorators/access.decorator';
+import { ApiUserType } from '../../decorators/user-type.decorator';
 import { GetStatCourierResDto } from './dto/stats-res.dto';
 import { GetStatCourierDto } from './dto/stats.dto';
 import { StatsService } from './stats.service';
-import { ApiUserType } from '../../decorators/user-type.decorator';
 
 @Controller('stats')
 @Public()
@@ -16,7 +16,7 @@ export class StatsController {
   @ApiUserType('manager')
   getCourier(
     @Param('id', ParseIntPipe) id: number,
-    @Param() query: GetStatCourierDto,
+    @Query() query: GetStatCourierDto,
   ): Promise<GetStatCourierResDto> {
     return this.service.getCourier(id, query.fields);
   }

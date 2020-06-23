@@ -12,6 +12,8 @@ import { AllExceptionFilter } from './filters/all-exception.filter';
 import { RolesGuard } from './guards/roles.guard';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 
+const log = console;
+
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
@@ -35,9 +37,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalGuards(new RolesGuard(reflector));
   swagger.add(app);
 
-  await app.listen(
-    PORT,
-    async () => `Application is running on: ${await app.getUrl()}`,
-  );
+  await app.listen(PORT);
+  log.info(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

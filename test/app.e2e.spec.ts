@@ -18,12 +18,20 @@ import ManagerSeed from '../src/seeds/manager.seed';
 import { OrderCheckoutDto } from '../src/modules/order/dto/order.dto';
 
 const fake = {
-  managerLogin: {
-    userType: 'manager',
-    email: 'manager@gmail.com',
-    password: 'password',
+  storeID: 0,
+  languageID: 1,
+  products: [0, 0] as [number, number],
+  manager: {
+    token: '',
+    login: {
+      userType: 'manager',
+      email: 'manager@gmail.com',
+      password: 'password',
+    },
   },
   customer: {
+    id: 0,
+    token: '',
     signup: {
       name: 'string',
       email: 'customer@gmail.com',
@@ -36,6 +44,7 @@ const fake = {
     },
   },
   customerOwner: {
+    token: '',
     signup: {
       name: 'string',
       email: 'customer_owner@gmail.com',
@@ -73,7 +82,9 @@ describe('AppController (e2e)', () => {
       }),
     );
     await app.init();
+  });
 
+  beforeAll(async () => {
     await conn.dropDatabase();
     await conn.synchronize();
     await new ManagerSeed().up();
@@ -89,24 +100,6 @@ describe('AppController (e2e)', () => {
 
   // https://github.com/gothinkster/realworld/blob/master/api/Conduit.postman_collection.json
   describe('Auth (Customer)', () => {
-    const manager = {
-      token: '',
-    };
-
-    const customer = {
-      id: 0,
-      token: '',
-    };
-
-    const customerOwner = {
-      // id: 0,
-      token: '',
-    };
-
-    const products: [number, number] = [0, 0];
-    const languageID = 1;
-    let storeID = 0;
-
     it('/auth/signup (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
@@ -132,13 +125,13 @@ describe('AppController (e2e)', () => {
     it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
-        .send(fake.managerLogin)
+        .send(fake.manager.login)
         .expect(201)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
 
-          manager.token = res.body.accessToken;
+          fake.manager.token = res.body.accessToken;
         });
     });
 
@@ -151,7 +144,7 @@ describe('AppController (e2e)', () => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
 
-          customer.token = res.body.accessToken;
+          fake.customer.token = res.body.accessToken;
         });
     });
 
@@ -164,29 +157,29 @@ describe('AppController (e2e)', () => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('accessToken');
 
-          customerOwner.token = res.body.accessToken;
+          fake.customerOwner.token = res.body.accessToken;
         });
     });
 
     it('/customers/me (GET)', () => {
       return request(app.getHttpServer())
         .get('/customers/me')
-        .set('Authorization', `Token ${customer.token}`)
+        .set('Authorization', `Token ${fake.customer.token}`)
         .expect(200)
         .expect((res) => {
           expect(res).toBeDefined();
           expect(res.body).toHaveProperty('id');
           expect(res.body).toHaveProperty('email');
 
-          customer.id = res.body.id;
+          fake.customer.id = res.body.id;
         });
     });
 
     it('/managers/customers/:customerId (PUT)', () => {
       return request(app.getHttpServer())
-        .put(`/managers/customers/${customer.id}`)
+        .put(`/managers/customers/${fake.customer.id}`)
         .send({ status: 'active' })
-        .set('Authorization', `Token ${manager.token}`)
+        .set('Authorization', `Token ${fake.manager.token}`)
         .expect(200)
         .expect((res) => {
           expect(res).toBeDefined();
@@ -199,7 +192,7 @@ describe('AppController (e2e)', () => {
       return request(app.getHttpServer())
         .put('/customers/me')
         .send({ description: 'new' } as UpdateCustomerDto)
-        .set('Authorization', `Token ${customer.token}`)
+        .set('Authorization', `Token ${fake.customer.token}`)
         .expect(200)
         .expect((res) => {
           expect(res).toBeDefined();
@@ -222,22 +215,22 @@ describe('AppController (e2e)', () => {
               latitude: 0,
             },
           } as CreateStoreDto)
-          .set('Authorization', `Token ${customerOwner.token}`)
+          .set('Authorization', `Token ${fake.customerOwner.token}`)
           .expect(201)
           .expect((res) => {
             expect(res).toBeDefined();
             expect(res.body).toHaveProperty('id');
             expect(res.body).toHaveProperty('owner');
 
-            storeID = res.body.id;
+            fake.storeID = res.body.id;
           });
       });
 
       it('/managers/stores/:storeId (PUT)', () => {
         return request(app.getHttpServer())
-          .put(`/managers/stores/${storeID}`)
+          .put(`/managers/stores/${fake.storeID}`)
           .send({ status: 'active' } as UpdateStoreFullDto)
-          .set('Authorization', `Token ${manager.token}`)
+          .set('Authorization', `Token ${fake.manager.token}`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();
@@ -248,9 +241,9 @@ describe('AppController (e2e)', () => {
 
       it('/stores/:storeId (PUT)', () => {
         return request(app.getHttpServer())
-          .put(`/stores/${storeID}`)
+          .put(`/stores/${fake.storeID}`)
           .send({ description: 'new_description' } as UpdateStoreDto)
-          .set('Authorization', `Token ${customerOwner.token}`)
+          .set('Authorization', `Token ${fake.customerOwner.token}`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();
@@ -276,7 +269,7 @@ describe('AppController (e2e)', () => {
 
       it('/stores/:storeId (GET)', () => {
         return request(app.getHttpServer())
-          .get(`/stores/${storeID}`)
+          .get(`/stores/${fake.storeID}`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();
@@ -287,22 +280,22 @@ describe('AppController (e2e)', () => {
 
       it('/stores/:storeId/menus (PUT)', () => {
         return request(app.getHttpServer())
-          .put(`/stores/${storeID}/menus`)
-          .set('Authorization', `Token ${customerOwner.token}`)
+          .put(`/stores/${fake.storeID}/menus`)
+          .set('Authorization', `Token ${fake.customerOwner.token}`)
           .send({
             data: [
               {
                 price: '150',
                 externalID: 'ext.1',
                 translations: [
-                  { title: 'title.1', language: { id: languageID } },
+                  { title: 'title.1', language: { id: fake.languageID } },
                 ],
               },
               {
                 price: '9.99',
                 externalID: 'ext.2',
                 translations: [
-                  { title: 'title.2', language: { id: languageID } },
+                  { title: 'title.2', language: { id: fake.languageID } },
                 ],
               },
             ],
@@ -318,14 +311,14 @@ describe('AppController (e2e)', () => {
             expect(res.body[0]).toHaveProperty('externalID');
             expect(res.body[0]).toHaveProperty('price', expect.any(String));
 
-            products[0] = res.body[0].id;
-            products[1] = res.body[1].id;
+            fake.products[0] = res.body[0].id;
+            fake.products[1] = res.body[1].id;
           });
       });
 
       it('/stores/:storeId/menus (GET)', () => {
         return request(app.getHttpServer())
-          .get(`/stores/${storeID}/menus`)
+          .get(`/stores/${fake.storeID}/menus`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();
@@ -345,12 +338,12 @@ describe('AppController (e2e)', () => {
       it('/customers/orders/checkout (POST)', () => {
         return request(app.getHttpServer())
           .post('/customers/orders/checkout')
-          .set('Authorization', `Token ${customer.token}`)
+          .set('Authorization', `Token ${fake.customer.token}`)
           .send({
             orderAddress: { address: 'address', latitude: 0, longitude: 0 },
             products: [
-              { quantity: 10, id: products[0] },
-              { quantity: 1, id: products[1] },
+              { quantity: 10, id: fake.products[0] },
+              { quantity: 1, id: fake.products[1] },
             ],
           } as OrderCheckoutDto)
           .expect(201)
@@ -362,7 +355,10 @@ describe('AppController (e2e)', () => {
             expect(res.body).toHaveProperty('customer');
             expect(res.body).toHaveProperty('orderAddress');
             expect(res.body).toHaveProperty('finishedAt', null);
-            expect(res.body).toHaveProperty('scheduledDate');
+            expect(res.body).toHaveProperty(
+              'scheduledDate',
+              expect.any(String),
+            );
             expect(res.body).toHaveProperty('totalPrice', expect.any(String));
             expect(res.body).toHaveProperty(
               'deliveryPrice',
@@ -377,7 +373,7 @@ describe('AppController (e2e)', () => {
       it('/customers/orders (GET)', () => {
         return request(app.getHttpServer())
           .get('/customers/orders')
-          .set('Authorization', `Token ${customer.token}`)
+          .set('Authorization', `Token ${fake.customer.token}`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();
@@ -394,7 +390,7 @@ describe('AppController (e2e)', () => {
       it('/customers/orders/:orderId/cancel (PUT)', () => {
         return request(app.getHttpServer())
           .put(`/customers/orders/${orderID}/cancel`)
-          .set('Authorization', `Token ${customer.token}`)
+          .set('Authorization', `Token ${fake.customer.token}`)
           .expect(200)
           .expect((res) => {
             expect(res).toBeDefined();

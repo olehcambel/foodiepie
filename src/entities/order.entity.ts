@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -25,6 +26,7 @@ export class Order implements AppEntity.Order {
   id: number;
 
   @Column({ type: 'enum', enum: statusArray, default: statusArray[0] })
+  @ApiProperty({ enum: statusArray })
   status: AppEntity.OrderStatus;
 
   @Column({ length: 255, nullable: true })
@@ -36,7 +38,7 @@ export class Order implements AppEntity.Order {
   @Column({ type: 'timestamp', nullable: true })
   finishedAt?: Date;
 
-  @Column({ width: 1, default: false })
+  @Column({ default: false })
   isPaid: boolean;
 
   @Column('decimal', { precision: 9, scale: 2 })
@@ -55,7 +57,10 @@ export class Order implements AppEntity.Order {
   })
   readonly updatedAt: Date;
 
-  @ManyToOne(() => StoreLocation, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  @ManyToOne(() => StoreLocation, {
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+  })
   storeLocation: StoreLocation;
 
   @ManyToOne(() => Customer, { onUpdate: 'CASCADE', onDelete: 'SET NULL' })
@@ -71,7 +76,7 @@ export class Order implements AppEntity.Order {
   @Column({ name: 'courierId', nullable: true })
   courierID?: number;
 
-  @OneToOne(() => OrderAddress, (oa) => oa.address, {
+  @OneToOne(() => OrderAddress, (oa) => oa.order, {
     cascade: ['update', 'insert'],
   })
   orderAddress: OrderAddress;

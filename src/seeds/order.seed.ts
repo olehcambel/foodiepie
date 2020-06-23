@@ -7,6 +7,7 @@ import CustomerSeed from './customer.seed';
 import StoreAddressSeed from './store-location.seed';
 
 export const seed: DeepPartial<Order>[] = [
+  // ACTIVE
   {
     id: 1,
     totalPrice: '150.0',
@@ -18,6 +19,7 @@ export const seed: DeepPartial<Order>[] = [
     customer: { id: 1 },
     courier: { id: 1 },
   },
+  // DELIVERED
   {
     id: 2,
     totalPrice: '150.0',
@@ -30,6 +32,7 @@ export const seed: DeepPartial<Order>[] = [
     customer: { id: 2 },
     courier: { id: 1 },
   },
+  // CANCELLED
   {
     id: 3,
     totalPrice: '500.50',
@@ -41,6 +44,7 @@ export const seed: DeepPartial<Order>[] = [
     customer: { id: 2 },
     courier: { id: 1 },
   },
+  // SCHEDULED
   {
     id: 4,
     totalPrice: '10.0',
