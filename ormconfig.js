@@ -17,13 +17,14 @@ const {
   TYPEORM_PASSWORD,
   TYPEORM_DATABASE,
   TYPEORM_LOGGING,
+  TYPEORM_HOST,
 } = process.env;
 
 /** @type {import('@nestjs/typeorm').TypeOrmModuleOptions} */
 const options = {
   port: 5432,
   // port: (TYPEORM_PORT && Number(TYPEORM_PORT)) || 5432,
-  // host: TYPEORM_HOST,
+  host: TYPEORM_HOST,
   username: TYPEORM_USERNAME,
   password: TYPEORM_PASSWORD,
   database: TYPEORM_DATABASE,

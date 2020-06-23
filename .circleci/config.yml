@@ -5,7 +5,7 @@ orbs:
 executors:
   node-db:
     docker:
-      - image: circleci/node:12.16
+      - image: circleci/node:lts
         environment:
           TYPEORM_USERNAME: 'root'
           TYPEORM_PASSWORD: 'password'
@@ -33,7 +33,7 @@ jobs:
   install-deps:
     # executor: node-db
     docker:
-      - image: circleci/node:12.16
+      - image: circleci/node:lts
     steps:
       - checkout
       - node/with-cache:
